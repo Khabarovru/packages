@@ -1,0 +1,786 @@
+homeassistant:
+  customize:  
+    sensor.load_powerstrip:
+      friendly_name: Удлинитель 6 портов
+    sensor.load_pow1:
+      friendly_name: Гостиная, кондиционер
+sensor:
+  - platform: template
+    sensors:
+      load_powerstrip:
+        value_template: "{{ state_attr('switch.powerstrip', 'load_power') }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id: switch.powerstrip
+        
+  - platform: mqtt
+    state_topic: "power/powerstrip/yesterday"
+    name: 'mqtt_power_yesterday_powerstrip'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/powerstrip/today"
+    name: 'mqtt_power_today_powerstrip'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/powerstrip/month"
+    name: 'mqtt_power_month_powerstrip'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/powerstrip/lastmonth"
+    name: 'mqtt_power_lastmonth_powerstrip'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_powerstrip:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_powerstrip.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_powerstrip:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_powerstrip.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+####AC#####
+  - platform: template
+    sensors:
+      load_pow1:
+        value_template: "{{ states.sensor.pow1_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.pow1_power
+
+  - platform: mqtt
+    state_topic: "power/pow1/yesterday"
+    name: 'mqtt_power_yesterday_pow1'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/pow1/today"
+    name: 'mqtt_power_today_pow1'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/pow1/month"
+    name: 'mqtt_power_month_pow1'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/pow1/lastmonth"
+    name: 'mqtt_power_lastmonth_pow1'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_pow1:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_pow1.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_pow1:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow1.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+
+####сервер#####
+  - platform: template
+    sensors:
+      load_pow3:
+        friendly_name: 'Гостиная, сервер'
+        value_template: "{{ states.sensor.pow3_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.pow3_power
+
+  - platform: mqtt
+    state_topic: "power/pow3/yesterday"
+    name: 'mqtt_power_yesterday_pow3'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/pow3/today"
+    name: 'mqtt_power_today_pow3'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/pow3/month"
+    name: 'mqtt_power_month_pow3'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/pow3/lastmonth"
+    name: 'mqtt_power_lastmonth_pow3'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_pow3:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_pow3.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_pow3:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow3.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+####холодильник#####
+  - platform: template
+    sensors:
+      load_pow2:
+        friendly_name: 'Кухня, холодильник'
+        value_template: "{{ states.sensor.pow2_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.pow2_power
+
+  - platform: mqtt
+    state_topic: "power/pow2/yesterday"
+    name: 'mqtt_power_yesterday_pow2'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/pow2/today"
+    name: 'mqtt_power_today_pow2'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/pow2/month"
+    name: 'mqtt_power_month_pow2'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/pow2/lastmonth"
+    name: 'mqtt_power_lastmonth_pow2'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_pow2:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_pow2.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_pow2:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow2.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+####plug_1#####
+  - platform: template
+    sensors:
+      load_plug_1:
+        value_template: "{{ states.sensor.plug_1_wattage.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.plug_1_wattage
+
+  - platform: mqtt
+    state_topic: "power/plug_1/yesterday"
+    name: 'mqtt_power_yesterday_plug_1'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/plug_1/today"
+    name: 'mqtt_power_today_plug_1'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/plug_1/month"
+    name: 'mqtt_power_month_plug_1'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/plug_1/lastmonth"
+    name: 'mqtt_power_lastmonth_plug_1'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_plug_1:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_1.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_plug_1:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_1.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash
+####plug_2#####
+  - platform: template
+    sensors:
+      load_plug_2:
+        value_template: "{{ states.sensor.plug_2_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.plug_2_power
+
+  - platform: mqtt
+    state_topic: "power/plug_2/yesterday"
+    name: 'mqtt_power_yesterday_plug_2'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/plug_2/today"
+    name: 'mqtt_power_today_plug_2'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/plug_2/month"
+    name: 'mqtt_power_month_plug_2'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/plug_2/lastmonth"
+    name: 'mqtt_power_lastmonth_plug_2'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_plug_2:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_2.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_plug_2:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_2.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash
+####plug_3#####
+  - platform: template
+    sensors:
+      load_plug_3:
+        value_template: "{{ states.sensor.plug_3_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.plug_3_power
+
+  - platform: mqtt
+    state_topic: "power/plug_3/yesterday"
+    name: 'mqtt_power_yesterday_plug_3'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/plug_3/today"
+    name: 'mqtt_power_today_plug_3'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/plug_3/month"
+    name: 'mqtt_power_month_plug_3'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/plug_3/lastmonth"
+    name: 'mqtt_power_lastmonth_plug_3'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_plug_3:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_3.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_plug_3:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_3.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash
+####plug_4#####
+  - platform: template
+    sensors:
+      load_plug_4:
+        value_template: "{{ states.sensor.plug_4_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.plug_4_power
+
+  - platform: mqtt
+    state_topic: "power/plug_4/yesterday"
+    name: 'mqtt_power_yesterday_plug_4'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/plug_4/today"
+    name: 'mqtt_power_today_plug_4'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/plug_4/month"
+    name: 'mqtt_power_month_plug_4'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/plug_4/lastmonth"
+    name: 'mqtt_power_lastmonth_plug_4'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_plug_4:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_4.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_plug_4:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_4.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash
+####plug_5#####
+  - platform: template
+    sensors:
+      load_plug_5:
+        value_template: "{{ states.sensor.plug_5_power.state }}"
+        icon_template: mdi:flash
+        unit_of_measurement: 'Вт'
+        entity_id:  sensor.plug_5_power
+
+  - platform: mqtt
+    state_topic: "power/plug_5/yesterday"
+    name: 'mqtt_power_yesterday_plug_5'
+    unit_of_measurement: 'кВт⋅ч'
+        
+  - platform: mqtt
+    state_topic: "power/plug_5/today"
+    name: 'mqtt_power_today_plug_5'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: mqtt
+    state_topic: "power/plug_5/month"
+    name: 'mqtt_power_month_plug_5'
+    unit_of_measurement: 'кВт⋅ч'
+    
+  - platform: mqtt
+    state_topic: "power/plug_5/lastmonth"
+    name: 'mqtt_power_lastmonth_plug_5'
+    unit_of_measurement: 'кВт⋅ч'
+
+  - platform: template
+    sensors:
+      money_month_plug_5:
+        friendly_name: "Стоимость за текущий месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_5.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+    
+  - platform: template
+    sensors:
+      money_lastmonth_plug_5:
+        friendly_name: "Стоимость за прошлый месяц"
+        unit_of_measurement: 'р'
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_5.state | float * 4.69)|round(2) }}"
+        icon_template: mdi:square-inc-cash 
+
+automation:
+##### 30 сек расчет
+  - alias: 00_power_conter
+    initial_state: true
+    trigger:
+      - platform: time_pattern
+        seconds: '/30'
+    action:
+##### Удлинитель 6 портов
+      - service: mqtt.publish
+        data_template:
+          topic: "power/powerstrip/today"
+          payload: '{{(states.sensor.mqtt_power_today_powerstrip.state | float +
+                      (states.sensor.load_powerstrip.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/powerstrip/month"
+          payload: '{{(states.sensor.mqtt_power_month_powerstrip.state | float +
+                      (states.sensor.load_powerstrip.state | float /120000))|round(5)}}'
+          retain: true
+##### AC
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow1/today"
+          payload: '{{(states.sensor.mqtt_power_today_pow1.state | float +
+                      (states.sensor.load_pow1.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow1/month"
+          payload: '{{(states.sensor.mqtt_power_month_pow1.state | float +
+                      (states.sensor.load_pow1.state | float /120000))|round(5)}}'
+          retain: true
+##### Холодильник
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow2/today"
+          payload: '{{(states.sensor.mqtt_power_today_pow2.state | float +
+                      (states.sensor.load_pow2.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow2/month"
+          payload: '{{(states.sensor.mqtt_power_month_pow2.state | float +
+                      (states.sensor.load_pow2.state | float /120000))|round(5)}}'
+          retain: true
+##### server
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow3/today"
+          payload: '{{(states.sensor.mqtt_power_today_pow3.state | float +
+                      (states.sensor.load_pow3.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow3/month"
+          payload: '{{(states.sensor.mqtt_power_month_pow3.state | float +
+                      (states.sensor.load_pow3.state | float /120000))|round(5)}}'
+          retain: true
+##### plug_1
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_1/today"
+          payload: '{{(states.sensor.mqtt_power_today_plug_1.state | float +
+                      (states.sensor.load_plug_1.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_1/month"
+          payload: '{{(states.sensor.mqtt_power_month_plug_1.state | float +
+                      (states.sensor.load_plug_1.state | float /120000))|round(5)}}'
+          retain: true
+##### plug_2
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_2/today"
+          payload: '{{(states.sensor.mqtt_power_today_plug_2.state | float +
+                      (states.sensor.load_plug_2.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_2/month"
+          payload: '{{(states.sensor.mqtt_power_month_plug_2.state | float +
+                      (states.sensor.load_plug_2.state | float /120000))|round(5)}}'
+          retain: true
+##### plug_3
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_3/today"
+          payload: '{{(states.sensor.mqtt_power_today_plug_3.state | float +
+                      (states.sensor.load_plug_3.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_3/month"
+          payload: '{{(states.sensor.mqtt_power_month_plug_3.state | float +
+                      (states.sensor.load_plug_3.state | float /120000))|round(5)}}'
+          retain: true
+##### plug_4
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_4/today"
+          payload: '{{(states.sensor.mqtt_power_today_plug_4.state | float +
+                      (states.sensor.load_plug_4.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_4/month"
+          payload: '{{(states.sensor.mqtt_power_month_plug_4.state | float +
+                      (states.sensor.load_plug_4.state | float /120000))|round(5)}}'
+          retain: true
+##### plug_5
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_5/today"
+          payload: '{{(states.sensor.mqtt_power_today_plug_5.state | float +
+                      (states.sensor.load_plug_5.state | float /120000))|round(5)}}'
+          retain: true
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_5/month"
+          payload: '{{(states.sensor.mqtt_power_month_plug_5.state | float +
+                      (states.sensor.load_plug_5.state | float /120000))|round(5)}}'
+          retain: true
+##### Начало дня    
+  - alias: 00_power_new_day
+    initial_state: true
+    trigger:
+      - platform: time
+        at: '00:00:05'
+    action:
+##### Запись данных за прошедший день
+##### Удлинитель 6 портов
+      - service: mqtt.publish
+        data_template:
+          topic: "power/powerstrip/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_powerstrip.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### AC
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow1/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_pow1.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### Холодильник
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow2/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_pow2.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### server
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow3/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_pow3.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_1
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_1/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_plug_1.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_2
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_2/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_plug_2.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_3
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_3/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_plug_3.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_4
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_4/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_plug_4.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_5
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_5/yesterday"
+          payload: '{{(states.sensor.mqtt_power_today_plug_5.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### Обнуление данных текущего дня
+##### Удлинитель 6 портов        
+      - service: mqtt.publish
+        data_template:
+          topic: "power/powerstrip/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### AC
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow1/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### Холодильник
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow2/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### server
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow3/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_1
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_1/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_2
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_2/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_3
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_3/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_4
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_4/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_5
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_5/today"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### Начало месяца
+  - alias: 00_power_new_ month
+    initial_state: true
+    trigger:
+      - platform: time
+        at: '00:00:10'
+    condition:
+      - condition: template
+        value_template: '{{ now().day == 1 }}'
+    action:
+##### Запись данных за прошедший месяц
+##### Удлинитель 6 портов          
+      - service: mqtt.publish
+        data_template:
+          topic: "power/powerstrip/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_powerstrip.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### AC
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow1/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_pow1.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### Холодильник
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow2/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_pow2.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### server
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow3/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_pow3.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_1
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_1/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_plug_1.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_2
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_2/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_plug_2.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_3
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_3/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_plug_3.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_4
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_4/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_plug_4.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### plug_5
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_5/lastmonth"
+          payload: '{{(states.sensor.mqtt_power_month_plug_5.state | float )|round(5)}}'
+          retain: true
+      - delay: 00:00:05
+##### Обнуление данных текущего месяца
+##### Удлинитель 6 портов  
+      - service: mqtt.publish
+        data_template:
+          topic: "power/powerstrip/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### AC
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow1/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### Холодильник
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow2/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+##### server
+      - service: mqtt.publish
+        data_template:
+          topic: "power/pow3/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_1
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_1/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_2
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_2/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_3
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_3/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_4
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_4/month"
+          payload: '{{ 0.0 }}'
+          retain: true
+#####plug_5
+      - service: mqtt.publish
+        data_template:
+          topic: "power/plug_5/month"
+          payload: '{{ 0.0 }}'
+          retain: true

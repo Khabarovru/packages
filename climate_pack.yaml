@@ -1,0 +1,604 @@
+homeassistant:
+  customize:
+    climate.heater:
+      friendly_name: Котёл
+      templates:
+        icon_color: >
+          if (state == 'idle') return 'rgb(0, 153, 255)';
+          if (state == 'heat') return 'rgb(255, 195, 0)';
+          return 'rgb(189, 189, 189)';
+    switch.heater:
+      friendly_name: Реле Котла (sonoff_2)
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:toggle-switch'; else return 'mdi:toggle-switch-off-outline';"
+    input_number.heater_set_temp:
+      friendly_name: Температура
+      templates:
+        icon: mdi:temperature-celsius
+        icon_color: rgb(255, 195, 0)
+    input_select.heater_automode:
+      friendly_name: "Режим нагрева (авто/ручной/выкл)"
+      templates:
+        icon_color: >
+          if (state == 'Auto') return 'rgb(255, 195, 0)';
+          if (state == 'Manual') return 'rgb(0, 153, 255)';
+          if (state == 'Off') return 'rgb(189, 189, 189)';
+           return 'rgb(189, 189, 189)';
+        icon: >
+          if (state == 'Auto') return 'mdi:radiator';
+          if (state == 'Manual') return 'mdi:gesture-double-tap';
+          if (state == 'Off') return 'mdi:mdi:radiator-off';
+          return 'mdi:radiator-off';
+    input_boolean.heater_automation_active:
+      friendly_name: "Автоматизация Котла"
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:calendar-check'; else return 'mdi:calendar-remove';"
+    sensor.heater_relay_status:
+      friendly_name: Реле Котла (sonoff_2)
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:toggle-switch'; else return 'mdi:toggle-switch-off-outline';"
+        state: if (state === 'on') return 'Вкл'; else return 'Выкл';
+    input_boolean.heater_notifications:
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:bell-ring'; else return 'mdi:bell-off';"
+    group.heater_show_automations:
+      friendly_name: Показать Автоматизации
+      templates:
+        icon: "mdi:calendar-text"
+    automation.heater_set_temp:
+      friendly_name: "Установить температуру (08:00)"
+
+    climate.ac:
+      friendly_name: Кондиционер
+      templates:
+        icon_color: >
+          if (state == 'idle') return 'rgb(0, 153, 255)';
+          if (state == 'cool') return 'rgb(255, 195, 0)';
+          return 'rgb(189, 189, 189)';
+    switch.ac:
+      friendly_name: Реле кондиционера (sonoff_pow1)
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:toggle-switch'; else return 'mdi:toggle-switch-off-outline';"
+    input_number.ac_set_temp:
+      friendly_name: Температура
+      templates:
+        icon: mdi:temperature-celsius
+        icon_color: rgb(255, 195, 0)
+    input_select.ac_automode:
+      friendly_name: "Режим охлаждения (авто/ручной/выкл)"
+      templates:
+        icon_color: >
+          if (state == 'Auto') return 'rgb(255, 195, 0)';
+          if (state == 'Manual') return 'rgb(0, 153, 255)';
+          if (state == 'Off') return 'rgb(189, 189, 189)';
+           return 'rgb(189, 189, 189)';
+        icon: >
+          if (state == 'Auto') return 'mdi:radiator';
+          if (state == 'Manual') return 'mdi:gesture-double-tap';
+          if (state == 'Off') return 'mdi:mdi:radiator-off';
+          return 'mdi:radiator-off';
+    input_boolean.ac_automation_active:
+      friendly_name: "Автоматизация кондиционера"
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:calendar-check'; else return 'mdi:calendar-remove';"
+    sensor.ac_relay_status:
+      friendly_name: Реле кондиционера (sonoff_pow1)
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:toggle-switch'; else return 'mdi:toggle-switch-off-outline';"
+        state: if (state === 'on') return 'Вкл'; else return 'Викл';
+
+    input_boolean.ac_notifications:
+      templates:
+        icon_color: "if (state === 'on') return 'rgb(0, 153, 255)'; else return 'rgb(189, 189, 189)';"
+        icon: "if (state === 'on') return 'mdi:bell-ring'; else return 'mdi:bell-off';"
+    group.ac_show_automations:
+      friendly_name: Показать Автоматизации
+      templates:
+        icon: "mdi:calendar-text"
+
+    automation.ac_set_temp:
+      friendly_name: "Установить температуру (08:00)"
+
+input_number:
+  heater_set_temp:
+    name: Temperature (Heater)
+    initial: 18
+    min: 16
+    max: 28
+    step: 0.5
+    unit_of_measurement: "°C"
+    mode: slider
+  ac_set_temp:
+    name: Temperature (AC)
+    initial: 28
+    min: 16
+    max: 28
+    step: 0.5
+    unit_of_measurement: "°C"
+    mode: slider
+  boiler_1_off_timer_minutes:
+    name: Duration (minutes)
+    icon: mdi:clock-fast
+    initial: 20
+    min: 5
+    max: 60
+    step: 5
+  boiler_1_restore_off_timer_minutes:
+    name: Restore Duration (minutes)
+    icon: mdi:clock-fast
+    initial: 20
+    min: 5
+    max: 60
+    step: 5
+
+input_boolean:
+  heater_automation_active:
+    name: 'Heater Automation'
+  heater_notifications:
+    name: 'Уведомления'
+  ac_automation_active:
+    name: 'Ac Automation'
+  ac_notifications:
+    name: 'Уведомления'
+  boiler_1_onoff_automation_active:
+      name: Automation Active
+      initial: on
+      icon: mdi:calendar-check
+  boiler_1_greenmode:
+      name: Green Mode (AutoPower OFF)
+      initial: on
+      icon: mdi:flash-auto
+  boiler_1_restore_states:
+      name: Restore to defaults at midnight
+      icon: mdi:history
+  boiler_1_notify_to_telegram:
+      name: Notify states by Telegram
+      icon: mdi:telegram
+
+input_datetime:
+  boiler_1_on_morning:
+    name: Switch ON Time (morning)
+    has_date: false
+    has_time: true
+    initial: '07:00'
+    icon: 'mdi:timer'
+  boiler_1_on_evening:
+    name: Switch ON Time (evening)
+    has_date: false
+    has_time: true
+    initial: '19:00'
+    icon: 'mdi:timer'
+  boiler_1_defaults_restore_time:
+    name: Time when restore starts
+    has_date: false
+    has_time: true
+    initial: '23:55'
+    icon: 'mdi:timer'
+  boiler_1_defaults_restore_timer_on_morning:
+    name: Restore Switch ON Time (morning)
+    has_date: false
+    has_time: true
+    initial: '07:00:00'
+    icon: 'mdi:timer'
+  boiler_1_defaults_restore_timer_on_evening:
+    name: Restore Switch ON Time (evening)
+    has_date: false
+    has_time: true
+    initial: '19:00:00'
+    icon: 'mdi:timer'
+
+group:
+  heater:
+    name: Котёл
+    entities:
+      - input_boolean.heater_automation_active
+      - climate.heater
+      - sensor.dark_sky_temperature
+      - sensor.heater_relay_status
+      - sensor.temperature_158d0002c8bc72
+  ac:
+    name: Кондиционер
+    entities:
+      - input_boolean.ac_automation_active
+      - climate.ac
+      - sensor.dark_sky_temperature
+      - sensor.ac_relay_status
+      - sensor.temperature_158d0002c8bc72
+  boiler_1_onoff:
+      name: Boiler Automations
+      entities:
+          - switch.plug_1_relay
+          - sensor.plug_1_wattage
+          - input_boolean.boiler_1_onoff_automation_active
+          - input_boolean.boiler_1_greenmode
+          - input_boolean.boiler_1_notify_to_telegram
+          - input_datetime.boiler_1_on_morning
+          - sensor.boiler_1_morning_off_timer
+          - input_datetime.boiler_1_on_evening
+          - sensor.boiler_1_evening_off_timer
+          - input_number.boiler_1_off_timer_minutes
+          - input_boolean.boiler_1_restore_states
+          - input_datetime.boiler_1_defaults_restore_time
+          - input_datetime.boiler_1_defaults_restore_timer_on_morning
+          - input_datetime.boiler_1_defaults_restore_timer_on_evening
+          - input_number.boiler_1_restore_off_timer_minutes
+
+input_select:
+  heater_automode:
+    name: Select Heater Mode
+    options:
+      - 'Auto'
+      - 'Manual'
+      - 'Off'
+  ac_automode:
+    name: Select AC Mode
+    options:
+      - 'Auto'
+      - 'Manual'
+      - 'Off'
+
+climate:
+  - platform: generic_thermostat
+    name: heater
+    heater: switch.sonoff_2
+    target_sensor: sensor.mean_temp
+    min_temp: 16
+    max_temp: 28
+    ac_mode: False
+    target_temp: 18
+    initial_hvac_mode: "off"
+  - platform: generic_thermostat
+    name: ac
+    heater: switch.sonoff_pow1
+    target_sensor: sensor.temperature_158d0002c8bc72
+    min_temp: 15
+    max_temp: 30
+    ac_mode: True
+    target_temp: 28
+    initial_hvac_mode: "off"
+
+sensor:
+  - platform: template
+    sensors:
+      heater_relay_status:
+        value_template: '{{ states.switch.sonoff_2.state }}'
+      ac_relay_status:
+        value_template: '{{ states.switch.sonoff_pow1.state }}'
+      boiler_1_morning_off_timer:
+        friendly_name: 'Switch OFF time (morning)'
+        icon_template: 'mdi:timer-off'
+        value_template: '{{(states.input_datetime.boiler_1_on_morning.attributes.timestamp|int+(states("input_number.boiler_1_off_timer_minutes")|int)*60)|timestamp_custom("%H:%M", False)}}'
+      boiler_1_evening_off_timer:
+        friendly_name: 'Switch OFF time (evening)'
+        icon_template: 'mdi:timer-off'
+        value_template: '{{(states.input_datetime.boiler_1_on_evening.attributes.timestamp|int+(states("input_number.boiler_1_off_timer_minutes")|int)*60)|timestamp_custom("%H:%M", False)}}'
+  - platform: min_max
+    name: mean_temp
+    type: mean
+    entity_ids:
+      - sensor.temperature_158d0001c2ac22
+      - sensor.temperature_158d0002c8bc72
+      - sensor.temperature_158d0002e28e4a
+      - sensor.temperature_158d0002ead196
+      - sensor.temperature_158d00025ea7d7
+
+script:
+  toggle_heater:
+    sequence:
+      - service: climate.set_operation_mode
+        data:
+          entity_id: climate.heater
+          operation_mode: "off"
+  toggle_ac:
+    sequence:
+      - service: climate.set_operation_mode
+        data:
+          entity_id: climate.ac
+          operation_mode: "off"
+
+switch:
+  - platform: template
+    switches:
+      heater:
+        value_template: "{{ is_state('switch.sonoff_2', 'on') }}"
+        turn_on:
+          service: switch.turn_on
+          data:
+            entity_id: switch.sonoff_2
+        turn_off:
+          service: switch.turn_off
+          data:
+            entity_id: switch.sonoff_2
+      ac:
+        value_template: "{{ is_state('switch.sonoff_pow1', 'on') }}"
+        turn_on:
+          service: switch.turn_on
+          data:
+            entity_id: switch.sonoff_pow1
+        turn_off:
+          service: switch.turn_off
+          data:
+            entity_id: switch.sonoff_pow1
+
+automation:
+  - alias: "heater off"
+    trigger:
+      platform: state
+      entity_id: input_select.heater_automode
+      to: 'Off'
+    condition:
+       - condition: state
+         entity_id: input_boolean.heater_automation_active
+         state: 'on'
+    action:
+      - service: climate.set_preset_mode
+        data:
+          entity_id: climate.heater
+          preset_mode: "off"
+
+  - alias: "heater automode on"
+    trigger:
+      platform: state
+      entity_id: input_select.heater_automode
+      to: 'Auto'
+    condition:
+       - condition: state
+         entity_id: input_boolean.heater_automation_active
+         state: 'on'
+    action:
+      - service: climate.set_preset_mode
+        data:
+          entity_id: climate.heater
+          preset_mode: "heat"
+      - service: climate.set_temperature
+        data_template:
+          entity_id: climate.heater
+          temperature: '{{ states.input_number.heater_set_temp.state }}'
+
+  - alias: 'heater set temp'
+    trigger:
+      - platform: state
+        entity_id: input_number.heater_set_temp
+    condition:
+       - condition: state
+         entity_id: input_boolean.heater_automation_active
+         state: 'on'
+    action:
+      - service: climate.set_temperature
+        data_template:
+          entity_id: climate.heater
+          temperature: '{{ states.input_number.heater_set_temp.state }}'
+      - service: notify.telegram
+        data_template:
+          title: 'Котёл'
+          message: 'Заданная температура {{ states.climate.heater.attributes.temperature }}°C, текушая температура {{ states.climate.heater.attributes.current_temperature }}°C'
+          notify_enabled: '{{ states.input_boolean.heater_notifications.state }}'
+
+  - alias: "ac off"
+    trigger:
+      platform: state
+      entity_id: input_select.ac_automode
+      to: 'Off'
+    condition:
+       - condition: state
+         entity_id: input_boolean.ac_automation_active
+         state: 'on'
+    action:
+      - service: climate.set_preset_mode
+        data:
+          entity_id: climate.ac
+          preset_mode: "off"
+  
+  - alias: "ac automode on"
+    trigger:
+      platform: state
+      entity_id: input_select.ac_automode
+      to: 'Auto'
+    condition:
+       - condition: state
+         entity_id: input_boolean.ac_automation_active
+         state: 'on'
+    action:
+      - service: climate.set_preset_mode
+        data:
+          entity_id: climate.ac
+          preset_mode: "cool"
+      - service: climate.set_temperature
+        data_template:
+          entity_id: climate.ac
+          temperature: '{{ states.input_number.ac_set_temp.state }}'
+
+  - alias: 'ac set temp'
+    trigger:
+      - platform: state
+        entity_id: input_number.ac_set_temp
+    condition:
+       - condition: state
+         entity_id: input_boolean.ac_automation_active
+         state: 'on'
+    action:
+      - service: climate.set_temperature
+        data_template:
+          entity_id: climate.ac
+          temperature: '{{ states.input_number.ac_set_temp.state }}'
+      - service: notify.telegram
+        data_template:
+          title: 'Кондиционер'
+          message: 'Заданная температура {{ states.climate.ac.attributes.temperature }}°C, текушая температура {{ states.climate.ac.attributes.current_temperature }}°C'
+          notify_enabled: '{{ states.input_boolean.ac_notifications.state }}'
+# ------------------------------------------------------------------------------
+# - Автоматизация включения/выключения - Утро/вечер
+# ------------------------------------------------------------------------------
+  - id: boiler_1_on_morning
+    alias: "Boiler On (morning)"
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (states.input_datetime.boiler_1_on_morning.attributes.timestamp|int|timestamp_custom('%H:%M', False)) }}"
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_onoff_automation_active
+          state: 'on'
+        - condition: state
+          entity_id: switch.plug_1_relay
+          state: 'off'
+    action:
+        - service: switch.turn_on
+          data:
+            entity_id: switch.plug_1_relay
+
+  - id: boiler_1_on_evening
+    alias: "Boiler On (evening)"
+    initial_state: true
+    trigger:
+      platform: template
+      value_template:  "{{ states('sensor.time') == (states.input_datetime.boiler_1_on_evening.attributes.timestamp|int|timestamp_custom('%H:%M', False)) }}"
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_onoff_automation_active
+          state: 'on'
+        - condition: state
+          entity_id: switch.plug_1_relay
+          state: 'off'
+    action:
+        - service: switch.turn_on
+          data:
+            entity_id: switch.plug_1_relay
+
+  - id: boiler_1_off_morning
+    alias: "Boiler Off (morning)"
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: '{{ states("sensor.time") == (states.input_datetime.boiler_1_on_morning.attributes.timestamp|int+(states("input_number.boiler_1_off_timer_minutes")|int)*60)|timestamp_custom("%H:%M", False)}}'
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_onoff_automation_active
+          state: 'on'
+        - condition: state
+          entity_id: switch.plug_1_relay
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.boiler_1_greenmode
+          state: 'off'
+    action:
+        - service: switch.turn_off
+          data:
+            entity_id: switch.plug_1_relay
+
+  - id: boiler_1_off_evening
+    alias: "Boiler Off (evening)"
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: '{{ states("sensor.time") == (states.input_datetime.boiler_1_on_evening.attributes.timestamp|int+(states("input_number.boiler_1_off_timer_minutes")|int)*60)|timestamp_custom("%H:%M", False)}}'
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_onoff_automation_active
+          state: 'on'
+        - condition: state
+          entity_id: switch.plug_1_relay
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.boiler_1_greenmode
+          state: 'off'
+    action:
+        - service: switch.turn_off
+          data:
+            entity_id: switch.plug_1_relay
+
+# ------------------------------------------------------------------------------
+# - Зеленый режим (авто-выключения)
+# ------------------------------------------------------------------------------
+  - id: boiler_1_greenmode
+    alias: "GreenMode AutoPowerOFF"
+    initial_state: true
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.plug_1_wattage
+      value_template: '{{ states.sensor.plug_1_wattage.state  }}'
+      below: 4
+      for: 
+        minutes: 5
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_greenmode
+          state: 'on'
+        - condition: state
+          entity_id: switch.plug_1_relay
+          state: 'on'
+    action:
+        - service: switch.turn_off
+          data:
+            entity_id: switch.plug_1_relay
+
+# ------------------------------------------------------------------------------
+# - Оповещения (телеграмм)
+# ------------------------------------------------------------------------------
+  - id: boiler_1_notfyon
+    alias: "Boiler notify On"
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: switch.plug_1_relay
+      from: 'off'
+      to: 'on'
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_notify_to_telegram
+          state: 'on'
+    action:
+        - service: notify.telegram
+          data:
+            message: "Бойлер включен в {{ states('sensor.time_date') }}"
+
+  - id: boiler_1_notfyoff
+    alias: "Boiler notify Off"
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: switch.plug_1_relay
+      from: 'on'
+      to: 'off'
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_notify_to_telegram
+          state: 'on'
+    action:
+        - service: notify.telegram
+          data:
+            message: "Бойлер выключен в {{ states('sensor.time_date') }}"
+
+# ------------------------------------------------------------------------------
+# - Восстановление значений
+# ------------------------------------------------------------------------------
+  - id: boiler_1_restore_states
+    alias: "Restore states to defaults"
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (states.input_datetime.boiler_1_defaults_restore_time.attributes.timestamp|int|timestamp_custom('%H:%M', False)) }}"
+    condition:
+        - condition: state
+          entity_id: input_boolean.boiler_1_restore_states
+          state: 'on'
+    action:
+        - service: input_datetime.set_datetime
+          entity_id: input_datetime.boiler_1_on_morning
+          data_template:
+            time: "{{states('input_datetime.boiler_1_defaults_restore_timer_on_morning')}}"
+        - service: input_datetime.set_datetime
+          entity_id: input_datetime.boiler_1_on_evening
+          data_template:
+            time: "{{states('input_datetime.boiler_1_defaults_restore_timer_on_evening')}}"
+        - service: input_number.set_value
+          data_template:
+            entity_id: input_number.boiler_1_off_timer_minutes
+            value: "{{states('input_number.boiler_1_restore_off_timer_minutes')}}"

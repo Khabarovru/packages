@@ -1,0 +1,674 @@
+yeelight:
+  devices:
+       192.168.1.99:
+        name: yeelight
+        transition: 1000
+        model: strip1
+
+group:
+  all_light:
+    name: Весь свет
+    entities:
+      - light.sonoff_1
+      - light.sonoff_3
+      - light.sonoff_4
+      - light.sonoff_6
+      - light.sonoff_7
+      - switch.sonoff_8
+      - light.sonoff_13
+
+timer:
+  toilet:
+    duration: '00:10:00'
+    
+  toilet_v:
+    duration: '00:10:00'
+
+  entrance:
+    duration: '00:05:00'
+
+  nochnik:
+    duration: '00:05:00'
+    
+  kitchen:
+    duration: '00:30:00'
+
+  bedroom:
+    duration: '00:05:00'
+
+input_boolean:
+  night_light:
+    initial: on
+    icon: mdi:calendar-check
+
+binary_sensor:
+
+  - platform: workday
+    country: RU
+
+  - platform: tod
+    name: tod_night
+    after: '22:00'
+    before: '06:00'
+    
+  - platform: tod
+    name: tod_morning
+    after: '06:00'
+    before: '09:00'
+    
+  - platform: tod
+    name: tod_day
+    after: '09:00'
+    before: '20:00'
+    
+  - platform: tod
+    name: tod_evening
+    after: '20:00'
+    before: '22:00'
+    
+  - platform: tod
+    name: tod_long_day
+    after: '06:00'
+    before: '21:30'
+    
+  - platform: tod
+    name: tod_early_night
+    after: '21:30'
+    before: '06:00'
+    
+  - platform: tod
+    name: tod_full_day
+    after: sunrise
+    before: sunset
+    
+  - platform: tod
+    name: tod_full_night
+    after: sunset
+    before: sunrise
+    
+  - platform: tod
+    name: weekday_time
+    after: '07:00'
+    before: '22:00'
+
+  - platform: tod
+    name: weekend_time
+    after: '10:00'
+    before: '22:00'
+
+script:
+  01_enter_on:
+    alias: Включение лампочки в прихожей
+    sequence:
+      - service: light.turn_on
+        entity_id:
+          -  light.sonoff_1
+          
+  01_enter_off:
+    alias: Выключение лампочки в прихожей
+    sequence:
+      - service: light.turn_off
+        entity_id:
+          -  light.sonoff_1
+
+  home_mode_away:
+    sequence:
+      - service: script.all_lights_off
+      # - service: input_boolean.turn_on
+      #   entity_id: input_boolean.notify_camera_motion
+      # - service: climate.set_preset_mode
+      #   data:
+      #     entity_id: climate.ac
+      #     preset_mode: "off"
+      # - service: climate.set_preset_mode
+      #   data:
+      #     entity_id: climate.heater
+      #     preset_mode: "off"
+      - service: notify.telegram
+        data:
+          message: >
+            Никого нет дома. Камера включена, охрана включена, Свет выключен, Кондиционер выключен, котел выключен!
+
+  all_lights_off:
+    sequence:
+      - service: switch.turn_off
+        entity_id: group.all_light
+
+  stub:
+    sequence:
+      - service: homeassistant.update_entity
+        entity_id:
+         - sensor.last_boot_custom
+
+automation:
+## Включение освещения
+- alias: 01_enter
+  initial_state: true
+  trigger:
+## Открытие входной двери
+   platform: state
+   entity_id: binary_sensor.door_window_sensor_158d00020f8533
+   from: 'off'
+   to: 'on'
+  action: 
+    - service: script.turn_on
+      data_template:
+       entity_id: >-
+          {%- if states.light.sonoff_1.state  == 'off' and (as_timestamp (now()) -as_timestamp(states.light.sonoff_1.last_changed) > 120) -%}
+          script.01_enter_on
+          {%- else -%}
+          script.stub
+          {%- endif -%}
+
+## Таймер освещения вкл
+- alias: 01_enter_light_timer_on
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.sonoff_1
+    to: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.entrance
+  - service: timer.start
+    entity_id: timer.entrance
+#    data_template: 
+#      duration: '00:05:00'
+  
+## Таймер освещения выкл
+- alias: 01_enter_light_timer_off
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.sonoff_1
+    to: 'off'
+  action:
+  - service: timer.cancel
+    entity_id: timer.entrance
+
+## Автоматическое выключение света
+- alias: 01_enter_light_auto_off
+  initial_state: true
+  trigger:
+## Таймер выключился
+   - platform: event
+     event_type: timer.finished
+     event_data:
+       entity_id: timer.entrance
+  condition:
+    - condition: state
+      entity_id: light.sonoff_1
+      state: 'on'
+  action:
+    - service: light.turn_off
+      entity_id:
+        - light.sonoff_1
+
+- alias: 02_toilet_light
+  initial_state: true
+  trigger:
+  - platform: state
+    entity_id: light.sonoff_7
+    to: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.toilet
+  - service: timer.start
+    entity_id: 
+      - timer.toilet
+    data_template: 
+        duration: > 
+         {%- if states("binary_sensor.tod_long_day") == 'on' -%}
+         00:10:00
+         {%- else -%}
+         00:05:00
+         {% endif %}
+## Таймер освещения обновление
+- alias: 02_toilet_light_timer_reload
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0002b70a2e
+  condition:
+    - condition: state
+      entity_id: light.sonoff_7
+      state: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.toilet
+  - service: timer.start
+    entity_id: 
+      - timer.toilet
+    data_template: 
+        duration: > 
+         {%- if states("binary_sensor.tod_long_day") == 'on' -%}
+         00:10:00
+         {%- else -%}
+         00:05:00
+         {% endif %}
+
+# Сброс таймера при выключении
+- alias: 02_toilet_timer_off
+  initial_state: true
+  trigger:
+  - platform: state
+    entity_id: light.sonoff_7
+    to: 'off'
+  action:
+  - service: timer.cancel
+    entity_id: timer.toilet
+
+# Включение освещения 
+- alias: 02_toilet_light_on
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id:  binary_sensor.motion_sensor_158d0002b70a2e
+  condition:
+  - condition: state
+    entity_id: light.sonoff_7
+    state: 'off'
+  action:
+  - service: light.turn_on
+    entity_id:
+      - light.sonoff_7
+
+# Выключение освещения       
+- alias: 02_toilet_light_off
+  initial_state: true
+  trigger:
+# Таймер
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.toilet
+  condition:
+  - condition: state
+    entity_id: light.sonoff_7
+    state: 'on'
+  action:
+  - service: light.turn_off
+    entity_id:
+      - light.sonoff_7
+ 
+# # Управление вентиляцией   
+# - alias: 02_toilet_vent_on
+#   initial_state: true
+#   trigger:
+# # Выключатель на входе в туалет
+#   - platform: state
+#     entity_id: light.sonoff_7
+#     from: 'off'
+#     to: 'on' 
+#   action:
+#   - service: switch.toggle
+#     entity_id: 
+#          - switch.sonoff_8
+# # Выключить вентилятор авто (Ванная)
+# - alias: 02_toilet_vent_off
+#   initial_state: 'on'
+#   trigger:
+#   - entity_id: light.sonoff_7
+#     platform: state
+#     from: 'on'
+#     to: 'off'
+#     for: 00:03:00
+#   - entity_id: sensor.humidity_bath
+#     platform: numeric_state
+#     below: '70'
+#     for: 00:03:00
+#   - entity_id: switch.sonoff_8
+#     platform: state
+#     from: 'off'
+#     to: 'on'
+#     for: 00:05:00
+#   condition:
+#     condition: and
+#     conditions:
+#     - condition: state
+#       entity_id: light.sonoff_7
+#       state: 'off'
+#     - condition: or
+#       conditions:
+#       - condition: template
+#         value_template: '{{ as_timestamp(now()) - as_timestamp(states.switch.sonoff_8.last_updated) | int > 600 }}'        
+#       - condition: numeric_state
+#         entity_id: sensor.humidity_bath
+#         below: '70'
+#   action:
+#   - service: switch.turn_off
+#     entity_id: switch.sonoff_8
+
+# #Включение таймера
+# - alias: 02_toilet_vent_timer
+#   initial_state: true
+#   trigger:       
+#    - platform: state
+#      entity_id: switch.sonoff_8
+#      to: 'on'
+#   action:
+#   - service: timer.cancel
+#     entity_id: timer.toilet_v
+#   - service: timer.start
+#     entity_id: timer.toilet_v
+    
+# # Выключение таймера
+# - alias: 02_toilet_vent_timer_off
+#   initial_state: true
+#   trigger:       
+#    - platform: state
+#      entity_id: switch.sonoff_8
+#      to: 'off'
+#   action:
+#   - service: timer.cancel
+#     entity_id: timer.toilet_v
+
+# # Выключение вентиляциии
+# - alias: 02_toilet_vent_off
+#   initial_state: true
+#   trigger:       
+#   - platform: event
+#     event_type: timer.finished
+#     event_data:
+#       entity_id: timer.toilet_v
+#   action:
+#   - service: switch.turn_off
+#     entity_id: 
+#          - switch.sonoff_8
+
+# Автоматическое включение ночника
+- alias: 03_nochnik_auto_on
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0001e562c6
+  condition:
+# Условие И - лампа выключена
+   condition: and
+   conditions:
+    - condition: state
+      entity_id: light.sonoff_3
+      state: 'off'
+    - condition: template
+      value_template: "{{ states('input_boolean.night_light') == 'on' }}"
+# Второе условие И - одно из двух
+    - condition: or
+      conditions:
+# Освещенность ниже 4 с датчика
+         - condition: numeric_state
+           entity_id: sensor.illumination_158d0001e562c6
+           below: 4
+# Время между закатом и рассветом
+         - condition: state
+           entity_id: binary_sensor.tod_full_night
+           state: 'on'
+  action:
+    - service: light.turn_on
+      entity_id:
+        - light.gateway_light_34ce00fb50ff
+
+## Таймер освещения вкл
+- alias: 03_nochnik_light_timer_on
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.gateway_light_34ce00fb50ff
+    to: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.nochnik
+  - service: timer.start
+    entity_id: timer.nochnik
+
+## Таймер освещения обновление
+- alias: 03_nochnik_light_timer_reload
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0001e562c6
+  condition:
+    - condition: state
+      entity_id: light.gateway_light_34ce00fb50ff
+      state: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.nochnik
+  - service: timer.start
+    entity_id: timer.nochnik
+
+
+## Таймер освещения выкл
+- alias: 03_nochnik_light_timer_off
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.gateway_light_34ce00fb50ff
+    to: 'off'
+  action:
+  - service: timer.cancel
+    entity_id: timer.nochnik
+        
+## Автоматическое отключение света       
+- alias: 03_nochnik_light_auto_off
+  initial_state: true
+  trigger:
+   - platform: event
+     event_type: timer.finished
+     event_data:
+       entity_id: timer.nochnik
+  condition:
+    - condition: state
+      entity_id: light.gateway_light_34ce00fb50ff
+      state: 'on'
+  action:
+    - service: light.turn_off
+      entity_id:
+        - light.gateway_light_34ce00fb50ff
+
+# Автоматическое включение ленты
+- alias: 04_strip_auto_on
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0002c636fa
+  condition:
+# Условие И - лампа выключена
+   condition: and
+   conditions:
+    - condition: state
+      entity_id: light.sonoff_13
+      state: 'off'
+    - condition: template
+      value_template: "{{ states('input_boolean.night_light') == 'on' }}"
+# Второе условие И - одно из двух
+    - condition: or
+      conditions:
+# Освещенность ниже 4 с датчика
+         - condition: numeric_state
+           entity_id: sensor.illumination_158d0002c636fa
+           below: 4
+# Время между закатом и рассветом
+         - condition: state
+           entity_id: binary_sensor.tod_full_night
+           state: 'on'
+  action:
+    - service: light.turn_on
+      entity_id:
+        - light.strip
+
+## Таймер освещения вкл
+- alias: 04_strip_light_timer_on
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.strip
+    to: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.kitchen
+  - service: timer.start
+    entity_id: timer.kitchen
+
+## Таймер освещения обновление
+- alias: 04_strip_light_timer_reload
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0002c636fa
+  condition:
+    - condition: state
+      entity_id: light.strip
+      state: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.kitchen
+  - service: timer.start
+    entity_id: timer.kitchen
+
+## Таймер освещения выкл
+- alias: 04_strip_light_timer_off
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.strip
+    to: 'off'
+  action:
+  - service: timer.cancel
+    entity_id: timer.kitchen
+
+# Автоматическое выключение ленты      
+- alias: 04_strip_light_auto_off
+  initial_state: true
+  trigger:
+   - platform: event
+     event_type: timer.finished
+     event_data:
+       entity_id: timer.kitchen
+  condition:
+    - condition: state
+      entity_id: light.strip
+      state: 'on'
+  action:
+    - service: light.turn_off
+      entity_id:
+        - light.strip
+
+# Автоматическое включение ленты
+- alias: 05_yeelight_auto_on
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0002b6f0f1
+  condition:
+# Условие И - лампа выключена
+   condition: and
+   conditions:
+    - condition: state
+      entity_id: light.sonoff_4
+      state: 'off'
+    - condition: template
+      value_template: "{{ states('input_boolean.night_light') == 'on' }}"
+# Второе условие И - одно из двух
+    - condition: or
+      conditions:
+# Освещенность ниже 4 с датчика
+         - condition: numeric_state
+           entity_id: sensor.illumination_158d0002b6f0f1
+           below: 4
+# Время между закатом и рассветом
+         - condition: state
+           entity_id: binary_sensor.tod_full_night
+           state: 'on'
+  action:
+    - service: light.turn_on
+      entity_id:
+        - light.yeelight
+
+## Таймер освещения вкл
+- alias: 05_yeelight_light_timer_on
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.yeelight
+    to: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.bedroom
+  - service: timer.start
+    entity_id: timer.bedroom
+
+## Таймер освещения обновление
+- alias: 05_yeelight_light_timer_reload
+  initial_state: true
+  trigger:
+# Датчик движения
+  - platform: event
+    event_type: xiaomi_aqara.motion
+    event_data:
+      entity_id: binary_sensor.motion_sensor_158d0002b6f0f1
+  condition:
+    - condition: state
+      entity_id: light.yeelight
+      state: 'on'
+  action:
+  - service: timer.cancel
+    entity_id: timer.bedroom
+  - service: timer.start
+    entity_id: timer.bedroom
+
+## Таймер освещения выкл
+- alias: 05_yeelight_light_timer_off
+  initial_state: true
+  trigger:
+## Лампочка включается
+  - platform: state
+    entity_id: light.yeelight
+    to: 'off'
+  action:
+  - service: timer.cancel
+    entity_id: timer.bedroom
+
+# Автоматическое выключение ленты      
+- alias: 05_yeelight_light_auto_off
+  initial_state: true
+  trigger:
+   - platform: event
+     event_type: timer.finished
+     event_data:
+       entity_id: timer.bedroom
+  condition:
+    - condition: state
+      entity_id: light.yeelight
+      state: 'on'
+  action:
+    - service: light.turn_off
+      entity_id:
+        - light.yeelight

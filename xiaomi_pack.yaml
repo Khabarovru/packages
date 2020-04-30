@@ -1,0 +1,170 @@
+homeassistant:
+  customize:
+# sensors
+    binary_sensor.door_window_sensor_158d00020f8533:
+      friendly_name: Входная дверь
+      icon: mdi:door
+    binary_sensor.switch_158d00023e4abc:
+      friendly_name: Кнопка звонка
+    binary_sensor.water_leak_sensor_158d000256d281:
+      friendly_name: Датчик протечки в санузле
+      icon: mdi:smoke-detector
+    binary_sensor.water_leak_sensor_158d00022f008f:
+      friendly_name: Датчик протечки в кухне
+      icon: mdi:smoke-detector
+    binary_sensor.motion_sensor_158d0002b70a2e:
+      friendly_name: Датчик движения в санузле
+    sensor.Illumination_158d0002b70a2e:
+      friendly_name: Освещенность в санузле
+    binary_sensor.motion_sensor_158d0001e562c6:
+      friendly_name: Датчик движения в гостиной
+    sensor.Illumination_158d0001e562c6:
+      friendly_name: Освещенность в гостиной
+    binary_sensor.motion_sensor_158d0002c636fa:
+      friendly_name: Датчик движения в кухне
+    sensor.Illumination_158d0002c636fa:
+      friendly_name: Освещенность в кухне
+    binary_sensor.motion_sensor_158d0002b6f0f1:
+      friendly_name: Датчик движения в спальне
+    sensor.illumination_158d0002b6f0f1:
+      friendly_name: Освещенность в спальне
+    binary_sensor.motion_sensor_158d0002c6f618:
+      friendly_name: Датчик движения в детской
+    sensor.illumination_158d0002c6f618:
+      friendly_name: Освещенность в детской
+    sensor.Illumination_34ce00fb50ff:
+      friendly_name: Освещенность в гостиной (ночник)
+    sensor.temperature_158d0001c2ac22:
+      friendly_name: Температура в санузле
+    sensor.temperature_158d0002c8bc72:
+      friendly_name: Температура в гостиной
+    sensor.temperature_158d0002e28e4a:
+      friendly_name: Температура в кухне
+    sensor.temperature_158d0002ead196:
+      friendly_name: Температура в спальне
+    sensor.temperature_158d00025ea7d7:
+      friendly_name: Температура в детской
+    sensor.humidity_158d0001c2ac22:
+      friendly_name: Влажность в санузле
+    sensor.humidity_158d0002c8bc72:
+      friendly_name: Влажность в гостиной
+    sensor.humidity_158d0002e28e4a:
+      friendly_name: Влажность в кухне
+    sensor.humidity_158d0002ead196:
+      friendly_name: Влажность в спальне
+    sensor.humidity_158d00025ea7d7:
+      friendly_name: Влажность в детской
+
+    sensor.miflora_moisture_1:
+      friendly_name: Влажность miflora 1
+    sensor.miflora_temperature_1:
+      friendly_name: Температура miflora 1
+    sensor.miflora_soil_conductivity_1:
+      friendly_name: Conductivity miflora 1
+    sensor.miflora_illuminance_1:
+      friendly_name: Освещенность miflora 1
+
+    sensor.miflora_moisture_2:
+      friendly_name: Влажность miflora 2
+    sensor.miflora_temperature_2:
+      friendly_name: Температура miflora 2
+    sensor.miflora_soil_conductivity_2:
+      friendly_name: Conductivity miflora 2
+    sensor.miflora_illuminance_2:
+      friendly_name: Освещенность miflora 2
+    sensor.mh_z19_co2_value:
+      friendly_name: Гостиная co2
+# Lights
+    light.sonoff_1:
+      friendly_name: Прихожая, люстра
+      icon: mdi:ceiling-light
+    light.sonoff_3:
+      icon: mdi:ceiling-light
+      friendly_name: Гостиная
+    light.sonoff_4:
+      friendly_name: Спальня люстра
+      icon: mdi:ceiling-light
+    light.sonoff_6:
+      friendly_name: Балкон люстра
+      icon: mdi:ceiling-light
+    light.sonoff_7:
+      friendly_name: Санузел
+      icon: mdi:ceiling-light
+    switch.sonoff_8:
+      friendly_name: Санузел вентилятор
+      icon: mdi:ceiling-light
+    switch.sonoff_9:
+      friendly_name: Удлинитель
+      icon: mdi:ceiling-light
+    light.sonoff_13:
+      friendly_name: Кухня люстра
+      icon: mdi:ceiling-light
+    light.yeelight:
+      friendly_name: Лента
+      icon: mdi:led-strip
+    light.strip:
+      friendly_name: strip
+      icon: mdi:track-light
+    light.gateway_light_34ce00fb50ff:
+      friendly_name: Ночник в гостиной
+    switch.plug_158d0003923110:
+      friendly_name: Прихожая люстра
+#switches
+    switch.plug_1_relay:
+      friendly_name: plug_1_relay
+      icon: mdi:fan
+    switch.plug_2_relay:
+      friendly_name: plug_2_relay
+      icon: mdi:set-top-box
+    switch.plug_3_relay:
+      friendly_name: plug_3_relay
+      icon: mdi:panorama-fisheye
+    switch.plug_4_relay:
+      friendly_name: plug_4_relay
+      icon: mdi:fan
+    switch.plug_5_relay:
+      friendly_name: plug_5_relay
+      icon: mdi:television
+    switch.pow1_relay:
+      friendly_name: pow1_relay
+      icon: mdi:set-top-box
+    switch.pow2_relay:
+      friendly_name: switch.pow2_relay
+      icon: mdi:television
+    switch.pow3_relay:
+      friendly_name: switch.pow3_relay
+      icon: mdi:desktop-tower-monitor
+    switch.powerstrip:
+      friendly_name: powerstrip
+      icon: mdi:desktop-tower-monitor
+
+xiaomi_aqara:
+  discovery_retry: 3
+  gateways:
+    - mac: !secret xiaomi_mac
+      key: !secret xiaomi_key
+      host: 192.168.1.33
+# Example configuration.yaml entry
+plant:
+  miflora_1:
+    sensors:
+      moisture: sensor.miflora_moisture_1
+      temperature: sensor.miflora_temperature_1
+      conductivity: sensor.miflora_soil_conductivity_1
+      brightness: sensor.miflora_illuminance_1
+    min_moisture: 20
+
+  miflora_2:
+    sensors:
+      moisture: sensor.miflora_moisture_2
+      temperature: sensor.miflora_temperature_2
+      conductivity: sensor.miflora_soil_conductivity_2
+      brightness: sensor.miflora_illuminance_2
+    min_moisture: 20
+# yeelight:
+#   devices:
+#       192.168.1.99:
+#         name: yeelight
+#         transition: 1000 #(default is 350ms just make sure not to set too low or too high)
+#         use_music_mode: True #(defaults to False - True will help keep the communications open)
+#         save_on_change: False #(defaults to True)

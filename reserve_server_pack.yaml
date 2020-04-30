@@ -1,0 +1,63 @@
+sensor:
+  - platform: uptime
+    name: online
+    unit_of_measurement: minutes
+  - platform: template
+    sensors:
+       online_custom:
+         value_template: >
+           {% set uptime = states.sensor.online.state | int %}
+           {% set minutes = (( uptime % 60) / 1) | int %}
+           {% set hours = ((uptime % 1440) / 60) | int %}
+           {% set days = (uptime / 1440) | int %}
+             {% if uptime < 1 %}
+               Меньше минуты
+             {% else %}
+               {% if days > 0 %}
+                 {{ days }} д.
+               {% endif %}
+               {% if hours > 0 %}
+                 {% if days > 0 %}
+                   {{ ' ' }}
+                 {% endif %}
+                 {{ hours }} ч.
+               {% endif %}
+               {% if minutes > 0 %}
+                 {% if days > 0 or hours > 0 %}
+                   {{ ' ' }}
+                 {% endif %}
+                   {{ minutes }} мин.
+               {% endif %}
+             {% endif %}
+
+  - platform: rest
+    resource: http://192.168.1.5:8123/api/states/sensor.online_custom
+    name: reserve_state
+    force_update: true
+    headers: 
+      Authorization: !secret main_token
+      content-type: 'application/json'
+    value_template: '{{ value_json.state }}'
+
+automation:
+  - alias: reserve_lost
+    initial_state: true
+    trigger:
+     platform: state
+     entity_id: sensor.reserve_state
+     to: 'unavailable'
+    action:
+      - service: notify.telegram
+        data:
+          message: "Потеря связи с основным сервером PC - {{ states('sensor.time_date') }} ."
+
+  - alias: reserve_online
+    initial_state: true
+    trigger:
+     platform: state
+     entity_id: sensor.reserve_state
+     from: 'unavailable'
+    action:
+      - service: notify.telegram
+        data:
+          message: "Связь с основным сервером PC восстановлена в - {{ states('sensor.time_date') }} ."

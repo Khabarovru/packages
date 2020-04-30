@@ -1,0 +1,94 @@
+counter:
+  warning_counter:
+    name: Warnings
+    icon: mdi:alert-box-outline
+    restore: true
+    step: 1
+    initial: 0
+  error_counter:
+    name: Errors
+    icon: mdi:alert-box
+    restore: true
+    step: 1
+    initial: 0
+sensor:
+  - platform: template
+    sensors:
+      error_counter:
+        value_template: "{{states('counter.error_counter')|int}}"
+        unit_of_measurement: 'ea'
+      warning_counter:
+        value_template: "{{states('counter.warning_counter')|int}}"
+        unit_of_measurement: 'ea'
+      error_counter_hourly:
+        value_template: "{{state_attr('sensor.error_counter_stats','change')|int}}"
+        unit_of_measurement: 'ea'
+        icon_template: mdi:alert
+      warning_counter_hourly:
+        value_template: "{{state_attr('sensor.warning_counter_stats','change')|int}}"
+        unit_of_measurement: 'ea'
+        icon_template: mdi:alert-outline
+
+  - platform: statistics
+    entity_id: sensor.error_counter
+    name: Error counter stats
+    sampling_size: 36000
+    max_age:
+      minutes: 60
+  - platform: statistics
+    entity_id: sensor.warning_counter
+    name: Warning counter stats
+    sampling_size: 36000
+    max_age:
+      minutes: 60
+script:
+  error_reset:
+    alias: Error Counter Reset
+    sequence:
+      - service: counter.reset
+        entity_id: 
+          - counter.error_counter
+
+  warning_reset:
+    alias: Warning Counter Reset
+    sequence:
+      - service: counter.reset
+        entity_id: 
+          - counter.warning_counter
+automation:
+- alias: system_error_counter
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type: system_log_event
+      event_data:
+        level: ERROR
+  action:
+    - service: counter.increment
+      entity_id: counter.error_counter
+
+- alias: system_warning_counter
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type: system_log_event
+      event_data:
+        level: WARNING
+  action:
+    - service: counter.increment
+      entity_id: counter.warning_counter
+
+- alias: system_health_hourly_errors
+  initial_state: 'false'
+  trigger:
+    - platform: state
+      entity_id: sensor.error_counter_stats
+  condition:
+    - condition: template
+      value_template: "{{ (state_attr('sensor.error_counter_stats','change')|int % 50) == 0 }}"
+    - condition: template
+      value_template: "{{ state_attr('sensor.error_counter_stats','change')|int > 200 }}"
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "\U0001f4a5 Внимание! Количество ошибок в час >{{state_attr('sensor.error_counter_stats','change')|int}}!"

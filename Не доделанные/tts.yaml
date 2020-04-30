@@ -1,0 +1,94 @@
+homeassistant:
+  customize:
+    script.media_player_stop_all:
+      friendly_name: Stop cast
+      icon: mdi:stop
+    media_player.kitchen_display:
+      friendly_name: Kitchen display
+      icon: mdi:monitor
+tts:
+- platform: google_translate
+  service_name: google_say
+  language: ru
+
+input_select:
+  radio_cast:
+    name: Play radio on
+    icon: mdi:cast
+    options:
+      - Kitchen speaker
+
+input_text:
+  radio_cast:
+    name: radio_cast
+    initial: ""
+
+script:
+# COMMON
+  media_radio_play_param_cast:
+    sequence:
+      - service: media_player.play_media
+        data_template:
+          entity_id: "{{ entity_id }}"
+          media_content_id: "{{ media_content_id }}"
+          media_content_type: "audio/mp4"
+
+# MORNING
+  media_radio_play_at_morning:
+    sequence:
+      - service: script.media_radio_play_param_cast
+        data_template:
+          entity_id: media_player.kitchen_display
+          media_content_id: "http://ice.stream.frequence3.net/frequence3-128.mp3"
+
+  media_player_stop_all:
+    sequence:
+      - service: media_player.media_stop
+        data_template:
+          entity_id:
+            - media_player.kitchen_display
+
+  tts_say_kitchen:
+    sequence:
+      - service: tts.google_say
+        entity_id: media_player.kitchen_display
+        data_template:
+          message:  "{{ message }}"
+          language: "ru"
+          cache: false
+  tts_summary:
+    sequence:
+      - service: script.tts_say_kitchen
+        data_template:
+          message: >
+            Привет!
+            До работы ехать {{ states.sensor.waze_home_work.state }} минут.
+
+automation:
+  - alias: "working_day_scene_on"
+    trigger:
+      - platform: time
+        at: "06:55:00"
+    action:
+      - service: scene.turn_on
+        entity_id: scene.workday_init
+      - service: media_player.volume_set
+        data_template:
+          entity_id: media_player.kitchen_display
+          volume_level: 0.2
+      - service: script.media_radio_play_param_cast
+        data_template:
+          entity_id: media_player.kitchen_display
+          media_content_id: "http://ice.stream.frequence3.net/frequence3-128.mp3"
+
+  - alias: "update_input_text_radio_cast"
+    trigger:
+      - platform: state
+        entity_id: input_select.radio_cast
+    action:
+      - service: input_text.set_value
+        data_template:
+          entity_id: input_text.radio_cast
+          value: >
+            {% if is_state("input_select.radio_cast", "Kitchen speaker") %} media_player.kitchen_display
+            {% endif %}

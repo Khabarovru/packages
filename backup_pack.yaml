@@ -1,0 +1,172 @@
+homeassistant:
+  customize:
+    automation.00_backup_everyday:
+      friendly_name: 0001 Резервное копирование
+      icon: mdi:cloud-upload
+    timer.backup:
+      friendly_name: Фаза завершается через -
+timer:
+  backup:
+    duration: '00:15:00'
+
+counter:
+  backup_stage:
+    initial: 0
+    step: 1
+
+rest_command:
+  google_backup:
+    url: 'http://127.0.0.1:8055/gb/doBackup'
+    timeout: '300'
+
+sensor:
+ - platform: mqtt
+   name: "status_google_backup"
+   state_topic: "googlebackup/result"
+
+ - platform: mqtt
+   name: "status_google_backup_70"
+   state_topic: "googlebackup/main70/result"
+   json_attributes_topic: "googlebackup/main70/result"
+
+ - platform: mqtt
+   name: "backup_phaze"
+   state_topic: "googlebackup/main70/phaze"
+
+ - platform: template
+   sensors:
+    last_google_backup:
+       friendly_name: 'Последний удачный бэкап'
+       value_template: '{{ (as_timestamp(states.sensor.status_google_backup_70.attributes["backupTimestamp"]) + 7200) | timestamp_custom("%d.%m.%Y %H:%M") }}'
+
+ - platform: template
+   sensors:
+    last_google_filecount:
+       friendly_name: 'Обнаружено файлов - '
+       value_template: '{{ states.sensor.status_google_backup_70.attributes["fileCount"] }}'
+
+ - platform: template
+   sensors:
+    last_google_alreadycount:
+       friendly_name: 'Уже было сохранено файлов - '
+       value_template: '{{ states.sensor.status_google_backup_70.attributes["alreadyCount"] }}'
+
+ - platform: template
+   sensors:
+    last_google_backedupcount:
+       friendly_name: 'Сохранено во время последнего прогона - '
+       value_template: '{{ states.sensor.status_google_backup_70.attributes["backedUpCount"] }}'
+
+ - platform: template
+   sensors:
+    last_google_deletedcount:
+       friendly_name: 'Удалено с сервера - '
+       value_template: '{{ states.sensor.status_google_backup_70.attributes["deletedCount"] }}'
+
+ - platform: template
+   sensors:
+    last_google_deletedfromgoogle:
+       friendly_name: 'Удалено с Google диска - '
+       value_template: '{{ states.sensor.status_google_backup_70.attributes["deletedFromGoogle"] }}'
+
+script:
+  ha_backup:
+    sequence:
+# Стадия 1, сжатие базы
+# Старт счетчика - фаза 1
+     - service: counter.reset
+       entity_id: counter.backup_stage
+     - service: counter.increment
+       entity_id: counter.backup_stage
+# Присвоение названия фазы 1
+     - service: mqtt.publish
+       data_template:
+         topic: "googlebackup/main70/phaze"
+         payload: 'Сжатие базы данных'
+         retain: true
+# Старт таймера 15 минут
+     - service: timer.start
+       entity_id: timer.backup
+       data_template:
+          duration: 00:15:00
+# Сжатие базы
+     - service: recorder.purge
+       data:
+          keep_days: 1
+          repack: true
+# Задержка 15 минут
+     - delay: 00:15:00
+# Стадия 2, создание бекапа
+# Счетчик - фаза 2
+     - service: counter.increment
+       entity_id: counter.backup_stage
+# Присвоение названия фазы 2
+     - service: mqtt.publish
+       data_template:
+         topic: "googlebackup/main70/phaze"
+         payload: 'Создание снимка системы'
+         retain: true
+# Отмена таймера, если остался
+     - service: timer.cancel
+       entity_id: timer.backup
+# Старт таймера 15 минут
+     - service: timer.start
+       entity_id: timer.backup
+       data_template:
+          duration: 00:15:00
+# Полный снимок системы
+     - service: hassio.snapshot_full
+       data_template:
+          name: Automatic Backup {{ states('sensor.time_date') }}
+# Задержка 15 минут
+     - delay: 00:15:00
+# Стадия 3, сохранение на Google Drive
+# Счетчик - фаза 3
+     - service: counter.increment
+       entity_id: counter.backup_stage
+# Присвоение названия фазы 3
+     - service: mqtt.publish
+       data_template:
+         topic: "googlebackup/main70/phaze"
+         payload: 'Сохранение на Google Drive'
+         retain: true
+# Отмена таймера, если остался
+     - service: timer.cancel
+       entity_id: timer.backup
+# Старт таймера 5 минут
+     - service: timer.start
+       entity_id: timer.backup
+       data_template:
+          duration: 00:05:00
+# Отправка на Google Drive
+     - service: rest_command.google_backup
+# Задержка 5 минут
+     - delay: 00:05:00
+# Сброс счетчика
+     - service: counter.reset
+       entity_id: counter.backup_stage
+# Присвоение названия - завершено
+     - service: mqtt.publish
+       data_template:
+         topic: "googlebackup/main70/phaze"
+         payload: 'Резервное копирование завершено'
+         retain: true
+# Сброс таймера
+     - service: timer.cancel
+       entity_id: timer.backup
+# ПУбликация времени создания бэкапа
+     - service: mqtt.publish
+       data_template:
+         topic: "googlebackup/main70/result"
+         payload: "{{ states('sensor.status_google_backup')}}"
+         retain: true
+
+automation:
+- alias: 00_backup_everyday
+  initial_state: true
+  trigger:
+    - platform: time
+      at: '01:00:00'
+  action:
+    - service: script.turn_on
+      entity_id: script.ha_backup

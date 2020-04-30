@@ -1,0 +1,170 @@
+homeassistant:
+  customize:
+    switch.frontdoor_camera_ir_filter:
+      name: Ночной режим
+    input_boolean.notify_camera_alerts:
+      name: Уведомления с камеры
+
+group:
+  frontdoor_camera:
+    - camera.frontdoor_camera
+    - switch.frontdoor_camera_ir_filter
+
+camera:
+  - platform: ffmpeg
+    name: Frontdoor Camera
+    input: -rtsp_transport tcp -i rtsp://root:ismart12@192.168.1.30:8554/unicast
+
+telegram_bot:
+  - platform: polling
+    api_key: !secret api_key
+    parse_mode: html
+    allowed_chat_ids:
+      - !secret chat_id
+
+notify:
+  - name: telegram
+    platform: telegram
+    chat_id: !secret chat_id
+
+input_boolean:
+  notify_camera_alerts:
+      initial: on
+      icon: mdi:calendar-check
+
+switch:
+  #ir_cut
+  - platform: mqtt
+    name: "frontdoor_camera_ir_filter"
+    state_topic: "myhome/dafang/ir_cut"
+    command_topic: "myhome/dafang/ir_cut/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+
+automation:
+#Выключение ночного режима когда свет в прихожей включен
+  # - id: camera_night_mode_off
+  #   alias: Cameras Night Mode Off
+  #   initial_state: true
+  #   trigger:
+  #     - platform: state
+  #       entity_id: light.sonoff_1
+  #       to: "on"
+  #   action:
+  #     - service: mqtt.publish
+  #       data:
+  #         topic: "myhome/dafang/ir_cut/set"
+  #         payload: "OFF"
+
+#Включение ночного режима когда свет в прихожей выключен
+  # - id: camera_night_mode_on
+  #   alias: Camera Night Mode On
+  #   initial_state: true
+  #   trigger:
+  #     - platform: state
+  #       entity_id: light.sonoff_1
+  #       to: "off"
+  #   action:
+  #     - service: mqtt.publish
+  #       data:
+  #         topic: "myhome/dafang/ir_cut/set"
+  #         payload: "ON"
+
+#Уведомление в телеграмм о движении если Денис не Дома
+  - alias: Notify Frontdoor Camera Snapshots
+    initial_state: true
+    trigger:
+## Открытие входной двери
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00020f8533
+      from: 'off'
+      to: 'on'
+    condition:
+      - condition: template
+        value_template: "{{ states('input_boolean.notify_camera_alerts') == 'on' }}"
+    action:
+      - delay: "{{ '00:00:08' if states.binary_sensor.door_window_sensor_158d00020f8533.state == 'on' else '0:0:0' }}"
+      - service: notify.telegram
+        data_template:
+          message: >
+            Открыта входная дверь
+      - service: notify.telegram
+        data_template:
+          message: Message
+          data: 
+            photo:
+              url: 'http://127.0.0.1:8123{{states.camera.frontdoor_camera.attributes.entity_picture}}'
+              caption: '{{now().strftime("%d.%m.%Y-%H:%M:%S")}}'
+
+## Звонок в дверь 
+  - alias: 01_frontdoor_switch_on
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.switch_158d00023e4abc
+     to: 'on'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Входная дверь"
+        message: "Звонок в дверь {{ states('sensor.time_date') }}"
+
+## Обнаружение протечки, душевая кабина  
+  - alias: 06_bathroom_wleak_shower_on
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.water_leak_sensor_158d000256d281
+     to: 'on'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Обнаружена протечка"
+        message: "Санузел душевая {{ states('sensor.time_date') }}"
+
+## Протечка устранена, душевая кабина    
+  - alias: 06_bathroom_wleak_shower_off
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.water_leak_sensor_158d000256d281
+     from: 'on'
+     to: 'off'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Протечка устранена"
+        message: "Санузел душевая {{ states('sensor.time_date') }}"
+
+## Обнаружение протечки, раковина     
+  - alias: 04_kitchen_wleak_washstand_on
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.water_leak_sensor_158d00022f008f
+     to: 'on'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Обнаружена протечка"
+        message: "Кухня раковина {{ states('sensor.time_date') }}"
+    - service: script.turn_on
+      entity_id: script.11_warning
+
+## Протечка устранена, раковина          
+  - alias: 04_kitchen_wleak_washstand_off
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.water_leak_sensor_158d00022f008f
+     from: 'on'
+     to: 'off'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Протечка устранена"
+        message: "Кухня раковина {{ states('sensor.time_date') }}"
+    - service: script.turn_on
+      entity_id: script.11_all_ok 

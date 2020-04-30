@@ -1,0 +1,136 @@
+alarm_control_panel:
+  - platform: manual
+    name: Home Alarm
+    # code: 1234
+    pending_time: 20
+    delay_time: 20
+    trigger_time: 180
+    disarmed:
+      trigger_time: 0
+    armed_home:
+      pending_time: 0
+      delay_time: 0
+    disarm_after_trigger: false
+
+input_boolean:
+  simple_alarm:
+
+automation:
+# ALARM FOR AWAY
+- alias: Alarm Away
+  initial_state: 'true'
+  trigger:
+  - entity_id: binary_sensor.door_window_sensor_158d00020f8533
+    platform: state
+    to: 'on'
+  condition:
+  - entity_id: alarm_control_panel.home_alarm
+    state: 'armed_away'
+    condition: state
+  action:
+  - data:
+      entity_id: alarm_control_panel.home_alarm
+    service: alarm_control_panel.alarm_trigger
+
+# # ALARM FOR AT HOME
+- alias: Alarm Home
+  initial_state: 'true'
+  trigger:
+  - entity_id: binary_sensor.door_window_sensor_158d00020f8533
+    platform: state
+    to: 'on'
+  condition:
+  - entity_id: alarm_control_panel.home_alarm
+    state: 'armed_home'
+    condition: state
+  action:
+  - data:
+      entity_id: alarm_control_panel.home_alarm
+    service: alarm_control_panel.alarm_trigger
+
+- alias: Alarm Home Notification
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: 'armed_home'
+  action:
+  - service: notify.telegram
+    data:
+      title: "Home Alarm"
+      message: "Сигнализация включена, режим HOME!"
+
+- alias: Alarm Alert Notification
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: 'triggered'
+  action:
+  - service: notify.telegram
+    data:
+      title: "Home Alarm"
+      message: "ALARM ALARM Сработала сигнализация ALARM ALARM"
+
+- alias: Alarm Away Notification
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: 'armed_away'
+  action:
+  - service: notify.telegram
+    data:
+      title: "Home Alarm"
+      message: "Сигнализация включена, режим AWAY!"
+
+- alias: Alarm Disarm Notification
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.home_alarm
+    to: 'disarmed'
+  action:
+  - service: notify.telegram
+    data:
+      title: "Home Alarm"
+      message: "Сигнализация отключена"
+
+# Alarm Notifications/Automatic Disarm
+- alias: Alarm Disarm Denis Away
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: person.khabarovru
+    to: 'home'
+    for:
+      seconds: 30
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.home_alarm
+      state: 'armed_away'
+  action:
+    - service: alarm_control_panel.alarm_disarm
+      entity_id: alarm_control_panel.home_alarm
+      # data: 1234
+
+- alias: simple alarm activate
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: input_boolean.simple_alarm
+    to: 'on'
+  action:
+    - service: alarm_control_panel.alarm_arm_home
+      entity_id: alarm_control_panel.home_alarm
+      # data: 1234
+- alias: simple alarm deactivate
+  initial_state: 'true'
+  trigger:
+  - platform: state
+    entity_id: input_boolean.simple_alarm
+    to: 'off'
+  action:
+    - service: alarm_control_panel.alarm_disarm
+      entity_id: alarm_control_panel.home_alarm
+#       data: 1234

@@ -1,0 +1,301 @@
+script:
+
+  battery_level_check:
+    alias: Battery Level Check
+    sequence:
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+              {% if states | selectattr('attributes.battery_level', 'defined') | selectattr('attributes.battery_level','<', states('input_number.battery_low_level')|int ) | list | count >= 1 %}
+                script.battery_level_low
+              {% else %}
+                script.battery_level_ok
+              {% endif%}
+
+  battery_level_low:
+    alias: Battery Level Low
+    sequence:
+      - service: notify.telegram
+        data_template:
+          message: >
+            {%- set low_batteries = states | selectattr('attributes.battery_level', 'defined') | selectattr('attributes.battery_level','<', states('input_number.battery_low_level')|int ) | map(attribute='name') | list | join(', ') -%}
+            {{"\U0001f6a8"}} Низкий заряд батарей: {{ low_batteries }}
+
+  battery_level_ok:
+    alias: Battery Level Ok
+    sequence:
+      - service: notify.telegram
+        data:
+          message: "\U0001f50b Батарей с уровнем заряда ниже {{states('input_number.battery_low_level')|int}}% не найдено!"
+
+  weather_telegram:
+    alias: Weather to Telegram
+    sequence:
+      - service: notify.telegram
+        data_template:
+          message: |
+            {%- set date = as_timestamp(now()) -%}
+            {% set weekday_list = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'] %}
+            {% set month_list = ['Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'] %}
+
+            {% set m_ok = date | timestamp_custom("%m") | int %}
+            {% set wd_ok = date | timestamp_custom("%w") | int %}
+
+            {% set weekday = weekday_list[wd_ok-1] %} 
+            {% set month = month_list[m_ok-1] %} 
+            {% set hour_num = now().hour | int %}
+            
+            {% if hour_num >=6 and hour_num <12 %} {{ "\U00002600" }}Доброе утро!
+            {% elif hour_num>=12 and hour_num<17 %} {{ "\U0001f31e" }}Добрый день!
+            {% elif hour_num>=17 and hour_num<22 %} {{ "\U0001f31d" }}Добрый вечер!
+            {% else %} {{ "\U0001f31a" }}Доброй ночи!
+            {% endif %}
+            {%if hour_num < 17 and hour_num >= 0 %}
+            Сегодня {{ weekday }}, {{ now().day|int }} {{ month_list[now().month-1] }}.
+            {{ states('sensor.dark_sky_summary_0d') }}
+            Температура днём {{states('sensor.dark_sky_daytime_high_temperature_0d')|round(0)}} °C. 
+            Вероятность осадков {{states('sensor.dark_sky_precip_probability_0d')|round(0)}} %. 
+            {%if states('sensor.dark_sky_precip_probability_0d')|int > 0 %} Вид осадков - {% if states('sensor.dark_sky_precip_0d') == "snow" %}снег{% elif states('sensor.dark_sky_precip_0d') == "rain" %}дождь{% elif states('sensor.dark_sky_precip_0d') == "sleet" %}снег с дождем{% else %}неизвестно{% endif %}.
+            {% endif %}
+            {% endif %}
+            {%if hour_num >= 17 and hour_num <= 23 %}
+            Прогноз погоды на завтра - {{ states('sensor.dark_sky_summary_1d') }}
+            Максимальная температура днём {{states('sensor.dark_sky_daytime_high_temperature_1d')|round(0)}} °C. 
+            Вероятность осадков {{states('sensor.dark_sky_precip_probability_1d')|round(0)}} %.
+            {%if states('sensor.dark_sky_precip_probability_1d')|int > 0 %}Вид осадков - {% if states('sensor.dark_sky_precip_1d') == "snow" %}снег{% elif states('sensor.dark_sky_precip_1d') == "rain" %}дождь{% elif states('sensor.dark_sky_precip_1d') == "sleet" %}снег с дождем{% else %}неизвестно{% endif %}.
+            {% endif %}
+            {% endif %}
+
+automation:
+# ##################################
+# Location - life360 Overdue update
+# ##################################
+- alias: location_life360_overdue_update
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type: life360_update_overdue
+  action:
+    - service: notify.telegram
+      data_template:
+        title: Life360 update overdue
+        message: "\U0001f910 Внимание! Задержка апдейт для {{state_attr(trigger.event.data.entity_id, 'friendly_name') or trigger.event.data.entity_id}}"
+
+# ##################################
+# Location - life360 Overdue update
+# ##################################
+- alias: location_life360_update_restored
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type: life360_update_restored
+  action:
+    - service: notify.telegram
+      data_template:
+        title: Life360 update restored
+        message: "\U0001f910 Внимание! Апдейт получен для {{state_attr(trigger.event.data.entity_id, 'friendly_name') or trigger.event.data.entity_id}} спустя {{ trigger.event.data.wait }}."
+
+# ##################################
+# System - START message
+# ##################################
+- alias: system_start_message
+  initial_state: 'true'
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - service: homeassistant.update_entity
+      entity_id: 
+        - sensor.host_uptime
+        - sensor.ha_uptime
+        - sensor.ha_init
+    - service: notify.telegram
+      data_template:
+        message: "\U0001F603 Сервер запущен за {{states('sensor.ha_init')|int}}сек!"
+    - service: script.turn_on
+      entity_id: script.system_start
+    - service: counter.increment
+      entity_id: counter.restart_counter
+    
+# ##################################
+# System - STOP message
+# ##################################
+- alias: system_stop_message
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type: homeassistant_stop
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "\U0001F621 Сервер остановлен после {{states('sensor.ha_uptime_text').replace('d','д').replace('h','ч').replace('m','м')}} работы!"
+        
+# ##################################
+# System - Hass.io NEW Device
+# ##################################
+- alias: system_new_device_found
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type:  device_tracker_new_device
+  action:
+    - service: notify.telegram
+      data_template: 
+        message: "\U00002734 Новое устройство: {{ trigger.event.data.host_name if trigger.event.data.host_name is defined else 'NA' }} - ({{ trigger.event.data.entity_id if trigger.event.data.entity_id is defined else 'NA' }})"
+
+# ##################################
+# System - Hass.io NEW Version
+# ##################################
+- alias: system_hassio_new_version
+  initial_state: 'true'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.updater
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.update_available 
+      from: 'off'
+      to: 'on'
+  action:
+    - service: notify.telegram
+      data_template: 
+        message: "\U00002733 Hass.io {{states('sensor.ha_latest_version')}} доступен!"
+
+# ##################################
+# System - NEW DAY
+# ##################################
+- alias: system_new_day_telegram
+  initial_state: 'true'
+  trigger:
+    - platform: time
+      at: '00:00:02'
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "\U0001F305 Начался новый день! За прошедшие сутки перезагрузок - {{states('counter.restart_counter')|int }}, ошибок - {{states('counter.error_counter')|int }}, предупреждений - {{states('counter.warning_counter')|int}}, ошибок входа - {{states('counter.badlogin_counter')|int}}. Входная дверь открывалась - {{states('counter.main_door_hb')|int}}раз(а)."
+    - service: counter.reset
+      entity_id: counter.warning_counter, counter.error_counter, counter.restart_counter, counter.badlogin_counter, counter.main_door_hb
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.weather_announcement_flag
+
+# ##################################
+# System - Weather FCST to Telegram
+# ##################################
+- alias: system_weather_to_telegram
+  initial_state: 'true'
+  trigger:
+    - platform: time
+      at: '07:00:00'
+    - platform: time
+      at: '21:00:00'
+  action:
+    - service: script.turn_on
+      entity_id: script.weather_telegram
+
+# ##################################
+# System - Dima At home
+# ##################################
+- alias: system_presence_dima_at_home
+  initial_state: 'true'
+  trigger:
+    - platform: state
+      entity_id: person.khabarovru
+      to: 'home'
+      for:
+        minutes: 3
+  action: 
+    - service: notify.telegram
+      data_template:
+        message: "\U0001F9D4 Денис дома!"
+
+# ##################################
+# System - login failure message
+# ##################################
+- alias: system_login_failure
+  initial_state: 'true'
+  trigger:
+    - platform: state
+      entity_id: persistent_notification.http_login
+  condition:
+    - condition: template
+      value_template: "{{ trigger.to_state.state != off }}"
+  action:
+    - service: counter.increment
+      entity_id: counter.badlogin_counter
+    - service: notify.telegram
+      data_template:
+        message: "\U0000274C Неудачная попытка подлючения. Неверно введен пароль! {{ state_attr('persistent_notification.http_login','message') }}"
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: http_login
+
+# ##################################
+# System - Sensors Low Battery Notification
+# ##################################
+- alias: system_low_battery
+  initial_state: 'true'
+  trigger:
+    - platform: time
+      at: "20:30:00"
+  condition:
+    - condition: template
+      value_template: >
+        {{ states | selectattr('attributes.battery_level', 'defined') | selectattr('attributes.battery_level','<', states('input_number.battery_low_level')|int ) | list | count >= 1 }}
+  action:  
+  - service: notify.telegram
+    data_template:
+      message: >
+        {%- set low_batteries = states | selectattr('attributes.battery_level', 'defined') | selectattr('attributes.battery_level','<', states('input_number.battery_low_level')|int ) | map(attribute='name') | list | join(', ') -%}
+        {{"\U0001f6a8"}} Низкий заряд батарей: {{ low_batteries }}
+          
+# ##################################
+# System - Transmission completed Torrent
+# ##################################
+- alias: system_transmission_completed_torrent
+  initial_state: 'true'
+  trigger:
+    - platform: event
+      event_type: transmission_downloaded_torrent
+  action:
+    - service: notify.telegram
+      data_template:
+        #title: "Torrent completed!"
+        message: "\U0001F4AF Загрузка завершена {{trigger.event.data.name}}"
+
+# ##################################
+# System - Telegram message on Config error
+# ##################################
+- alias: system_config_error_notification
+  initial_state: 'true'
+  trigger:
+    - platform: state
+      entity_id: persistent_notification.homeassistant_check_config
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "{{ '\U0000274C' }} Перезапуск отменён. Конфигурация содержит ошибки."
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: homeassistant_check_config
+
+# ##################################
+# System - HACS Update Available
+# ##################################
+- alias: system_hacs_update_available
+  initial_state: 'true'
+  trigger:
+    - platform: state
+      entity_id: sensor.hacs
+  condition:
+    - condition: template
+      value_template: >
+        {% set ignore = ['unknown', 'unavailable', 'none'] %}
+        {{ trigger.from_state.state not in ignore and
+           trigger.to_state.state not in ignore and
+           trigger.to_state.state != trigger.from_state.state }}  
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "\U0001f31f HACS - доступны обновления {{states('sensor.hacs')}}!"

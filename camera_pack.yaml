@@ -1,0 +1,180 @@
+homeassistant:
+  customize:
+    binary_sensor.frontdoor_camera_motion_sensor:
+      name: Датчик движения камеры
+
+group:
+  frontdoor_camera:
+    - camera.frontdoor_camera
+    - camera.frontdoor_camera_pic
+    - switch.frontdoor_camera_ir_filter
+    - switch.frontdoor_camera_ir_led
+    - switch.frontdoor_camera_night_mode
+    - switch.frontdoor_camera_night_mode_auto
+    - switch.frontdoor_camera_blue_led
+    - switch.frontdoor_camera_yellow_led
+    - switch.frontdoor_camera_motion_detection
+    - binary_sensor.frontdoor_camera_motion_sensor
+
+camera:
+  - platform: ffmpeg
+    name: Frontdoor Camera
+    input: -rtsp_transport tcp -i rtsp://root:ismart12@192.168.1.30:8554/unicast
+  - platform: generic
+    name: Frontdoor Camera pic
+    username: root
+    password: ismart12
+    authentication: basic
+    still_image_url: http://root:ismart12@192.168.1.30/cgi-bin/currentpic.cgi
+    stream_source: rtsp://root:ismart12@192.168.1.30:8554/unicast
+    verify_ssl: false
+    scan_interval: 5
+
+binary_sensor:
+  - platform: mqtt
+    name: "frontdoor_camera_motion_sensor"
+    state_topic: "myhome/dafang/motion"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    device_class: motion
+
+switch:
+  #LED blue
+  - platform: mqtt
+    name: "frontdoor_camera_blue_led"
+    state_topic: "myhome/dafang/leds/blue"
+    command_topic: "myhome/dafang/leds/blue/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+  #LED yellow
+  - platform: mqtt
+    name: "frontdoor_camera_yellow_led"
+    state_topic: "myhome/dafang/leds/yellow"
+    command_topic: "myhome/dafang/leds/yellow/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+  #LED ir
+  - platform: mqtt
+    name: "frontdoor_camera_ir_led"
+    state_topic: "myhome/dafang/leds/ir"
+    command_topic: "myhome/dafang/leds/ir/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+  #ir_cut
+  - platform: mqtt
+    name: "frontdoor_camera_ir_filter"
+    state_topic: "myhome/dafang/ir_cut"
+    command_topic: "myhome/dafang/ir_cut/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+  #night_mode
+  - platform: mqtt
+    name: "frontdoor_camera_night_mode"
+    state_topic: "myhome/dafang/night_mode"
+    command_topic: "myhome/dafang/night_mode/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+  #night_mode_auto
+  - platform: mqtt
+    name: "frontdoor_camera_night_mode_auto"
+    state_topic: "myhome/dafang/night_mode/auto"
+    command_topic: "myhome/dafang/night_mode/auto/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+  #motion_detection
+  - platform: mqtt
+    name: "frontdoor_camera_motion_detection"
+    state_topic: "myhome/dafang/motion/detection"
+    command_topic: "myhome/dafang/motion/detection/set"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: false
+
+automation:
+#Выключение ночного режима когда свет в прихожей включен
+  - id: camera_night_mode_off
+    alias: Cameras Night Mode Off
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: light.sonoff_1
+        to: "on"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "myhome/dafang/ir_cut/set"
+          payload: "OFF"
+      - service: mqtt.publish
+        data:
+          topic: "myhome/dafang/ir/set"
+          payload: "OFF"
+      - service: mqtt.publish
+        data:
+          topic: "myhome/dafang/night_mode/set"
+          payload: "OFF"
+#Включение ночного режима когда свет в прихожей выключен
+  - id: camera_night_mode_on
+    alias: Camera Night Mode On
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: light.sonoff_1
+        to: "off"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "myhome/dafang/ir_cut/set"
+          payload: "ON"
+      - service: mqtt.publish
+        data:
+          topic: "myhome/dafang/ir/set"
+          payload: "ON"
+      - service: mqtt.publish
+        data:
+          topic: "myhome/dafang/night_mode/set"
+          payload: "ON"
+#Уведомление в телеграмм о движении если Денис не Дома
+  # - alias: Notify Frontdoor Camera Snapshots
+  #   initial_state: true
+  #   trigger:
+  #     payload: 'ON'
+  #     platform: mqtt
+  #     topic: myhome/dafang/motion
+  #   condition:
+  #     - condition: template
+  #       value_template: "{{ states('input_boolean.notify_camera_alerts') == 'on' }}"
+  #     - condition: template
+  #       value_template: >
+  #         {% set denis = states.device_tracker.iphonesedenis.state %}
+  #         {% if denis != "home" %}
+  #           True
+  #         {% else %}
+  #           False
+  #         {% endif %}
+  #   action:
+  #     - delay: "{{ '00:00:08' if states.binary_sensor.door_window_sensor_158d00020f8533.state == 'on' else '0:0:0' }}"
+  #     - service: notify.telegram
+  #       data_template:
+  #         message: >
+  #           Камера обнаружила движение
+  #     - service: notify.telegram
+  #       data_template:
+  #         message: Message
+  #         data: 
+  #           photo:
+  #             url: 'http://127.0.0.1:8123{{states.camera.frontdoor_camera.attributes.entity_picture}}'
+  #             caption: '{{now().strftime("%d.%m.%Y-%H:%M:%S")}}'

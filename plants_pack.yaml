@@ -1,0 +1,51 @@
+plant:
+  miflora_1:
+    sensors:
+      moisture: sensor.miflora_moisture_1
+      temperature: sensor.miflora_temperature_1
+      conductivity: sensor.miflora_soil_conductivity_1
+      brightness: sensor.miflora_illuminance_1
+    min_moisture: 20
+  miflora_2:
+    sensors:
+      moisture: sensor.miflora_moisture_2
+      temperature: sensor.miflora_temperature_2
+      conductivity: sensor.miflora_soil_conductivity_2
+      brightness: sensor.miflora_illuminance_2
+    min_moisture: 20
+
+automation:
+- alias: 'Plant 1 Low moisture'
+  initial_state: true
+  trigger:
+    platform: numeric_state
+    entity_id:
+      - sensor.miflora_moisture_1
+    below: 25
+  condition:
+    - condition: state
+      entity_id: 'device_tracker.miphone'
+      state: 'home'
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "Полей кипарис: {{ states('sensor.miflora_moisture_1') }}%."
+      data:
+        message: "Полей кипарис: {{ states('sensor.miflora_moisture_1') }}%."
+- alias: 'Plant 2 Low moisture'
+  initial_state: true
+  trigger:
+    platform: numeric_state
+    entity_id:
+      - sensor.miflora_moisture_2
+    below: 25
+  condition:
+    - condition: state
+      entity_id: 'device_tracker.miphone'
+      state: 'home'
+  action:
+    - service: notify.telegram
+      data_template:
+        message: "Полей лавровый лист: {{ states('sensor.miflora_moisture_2') }}%."
+      data:
+        message: "Полей лавровый лист: {{ states('sensor.miflora_moisture_2') }}%."
