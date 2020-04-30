@@ -1,0 +1,362 @@
+homeassistant:
+  customize:
+    script.play_radio:
+      action_name: 'Play'
+      icon: mdi:play
+    script.stop_radio:
+      action_name: 'Stop'
+      icon: mdi:stop
+
+    input_number.radio_volume:
+      templates:
+        icon: >
+          if (state === '0.0') return 'mdi:volume-off';
+          if (state <= '0.3') return 'mdi:volume-low';
+          if (state <= '0.6') return 'mdi:volume-medium';
+          if (state <= '1.0') return 'mdi:volume-high';
+        icon_color: >
+          if (state === '0.0') return 'rgb(145,227,237)';
+          if (state <= '0.1') return 'rgb(105,212,231)';
+          if (state <= '0.2') return 'rgb(46,147,238)';
+          if (state <= '0.3') return 'rgb(0,220,16)';
+          if (state <= '0.4') return 'rgb(0,195,13)';
+          if (state <= '0.5') return 'rgb(250,255,0)';
+          if (state <= '0.6') return 'rgb(252,150,0)';
+          if (state <= '0.7') return 'rgb(218,53,0)';
+          if (state <= '0.8') return 'rgb(255,0,0)';
+          if (state <= '0.9') return 'rgb(154,0,0)';
+          if (state <= '1.0') return 'rgb(81,0,0)';
+
+##############################################################################################################
+# Groups
+##############################################################################################################
+
+group:
+  radio:
+    name: Radio
+    entities:
+    - input_select.radio_station
+    - input_select.media_player
+    - input_number.radio_volume
+    - script.play_radio
+    - input_boolean.stop_radio
+    - script.stop_radio
+
+##############################################################################################################
+# Inputs
+##############################################################################################################
+
+input_boolean:
+  stop_radio:
+    name: Stop radio
+    initial: on
+    icon: mdi:volume-off
+
+input_select:
+  radio_station:
+    icon: mdi:radio
+    name: 'Select Radio Station:'
+    options:
+      - 'My music'
+      - 'Ocean sounds'
+      - 'Rain sounds'
+
+  radio_station_wakeup:
+    icon: mdi:radio
+    name: 'Select Wakeup radio:'
+    options:
+      - 'My music'
+      - 'Ocean sounds'
+      - 'Rain sounds'
+
+  radio_station_sleep:
+    icon: mdi:radio
+    name: 'Select sleep radio:'
+    options:
+      - 'My music'
+      - 'Ocean sounds'
+      - 'Rain sounds'
+
+  media_player:
+    name: 'Select Media player:'
+    icon: mdi:speaker-wireless
+    options:
+      - ghm2
+      - ghm1
+      - All Google Home Mini
+    initial: ghm1
+
+input_number:
+  radio_volume:
+    name: Volume
+    min: 0
+    max: 1
+    step: 0.05
+    unit_of_measurement: '%'
+
+##############################################################################################################
+# Sensor
+##############################################################################################################
+
+sensor:
+  - platform: template
+    sensors:
+      media_player:
+        friendly_name: Media player
+        value_template: >
+          {% set state = states('input_select.media_player') %}
+          {% if state == 'ghm1' %} media_player.ghm1
+          {% elif state == 'ghm2' %} media_player.ghm2
+          {% else %} group.all_google_home_mini
+          {% endif %}
+
+  - platform: template
+    sensors:
+      radio_station:
+        friendly_name: Radio station
+        value_template: >
+            {% set mapper = 
+              { 'My music':'http://192.168.1.223:8123/local/1.mp3',
+                'Ocean sounds':'https://www.gstatic.com/voice_delight/sounds/long/ocean.mp3',
+                'Rain sounds':'https://www.gstatic.com/voice_delight/sounds/long/rain.mp3'} %}
+            {% set state = states('input_select.radio_station') %}
+            {{mapper[state]}}
+
+      radio_station_wake_up:
+        friendly_name: Wakeup station
+        value_template: >
+            {% set mapper = 
+              { 'My music':'http://192.168.1.223:8123/local/1.mp3',
+                'Ocean sounds':'https://www.gstatic.com/voice_delight/sounds/long/ocean.mp3',
+                'Rain sounds':'https://www.gstatic.com/voice_delight/sounds/long/rain.mp3'} %}
+            {% set state = states('input_select.radio_station_wakeup') %}
+            {{mapper[state]}}
+
+      radio_station_sleep:
+        friendly_name: Sleep station
+        value_template: >
+            {% set mapper = 
+              { 'My music':'http://192.168.1.223:8123/local/1.mp3',
+                'Ocean sounds':'https://www.gstatic.com/voice_delight/sounds/long/ocean.mp3',
+                'Rain sounds':'https://www.gstatic.com/voice_delight/sounds/long/rain.mp3'} %}
+            {% set state = states('input_select.radio_station_sleep') %}
+            {{mapper[state]}}
+##############################################################################################################
+# Scripts
+##############################################################################################################
+
+script:
+  stop_radio:
+    alias: Stop radio
+    sequence:
+      service: media_player.turn_off
+      data_template:
+        entity_id: >
+          {{states('sensor.media_player')}}
+
+  play_radio:
+    alias: Play radio
+    sequence:
+      - service: media_player.play_media
+        data_template:
+          entity_id: >
+            {{states('sensor.media_player')}}
+          media_content_id: >
+            {{states('sensor.radio_station')}}
+          media_content_type: 'audio/mp4'
+
+  play_wakeup_radio:
+    alias: Play wakeup radio
+    sequence:
+      - service: media_player.play_media
+        data_template:
+          entity_id: media_player.ghm1
+          media_content_id: >
+            {{states('sensor.radio_station_wake_up')}}
+          media_content_type: 'audio/mp4'
+
+  play_sleep_radio:
+    alias: Play sleep radio
+    sequence:
+      - service: media_player.play_media
+        data_template:
+          entity_id: >
+            {{states('sensor.media_player')}}
+          media_content_id: >
+            {{states('sensor.radio_station_sleep')}}
+          media_content_type: 'audio/mp4'
+
+  sleep_radio:
+    alias: sleep radio
+    sequence:
+      - alias: Set Volume
+        service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.4'
+      - delay:
+          seconds: 15
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.35'
+      - service: script.play_sleep_radio
+      - delay:
+          minutes: 5
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.3'
+      - delay:
+          minutes: 2
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.25'
+      - delay:
+          minutes: 2
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.15'
+      - delay:
+          minutes: 5
+      - service: media_player.turn_off
+        data_template:
+          entity_id: media_player.ghm1
+
+  wakeup_radio:
+    alias: wakeup radio
+    sequence:
+      - alias: Set Volume
+        service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.01'
+      - service: script.play_wakeup_radio
+      - delay:
+          minutes: 2
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.05'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.10'
+      - delay:
+          minutes: 2
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.15'
+      - delay:
+          minutes: 2
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.20'
+      - delay:
+          minutes: 2
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.25'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.30'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.35'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.40'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.45'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.50'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.55'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.60'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.65'
+      - delay:
+          minutes: 1
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.ghm1
+          volume_level: '0.70'
+
+  ##############################################################################################################
+# Automations
+##############################################################################################################
+
+automation:
+  - alias: Play Radio
+    hide_entity: True
+    trigger:
+      platform: state
+      entity_id: input_select.radio_station
+    action:
+      service: script.play_radio
+
+  - alias: Stop radio
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: device_tracker.life360_denis
+        to: 'not_home'
+        for:
+          minutes: 5
+      - platform: state
+        entity_id: input_boolean.stop_radio
+        to: 'on'
+    action: 
+      service: script.stop_radio
+
+  - alias: 'Set Radio volume'
+    id: 'Set Radio volume'
+    trigger:
+      platform: state
+      entity_id: input_number.radio_volume
+    condition: []
+    action:
+      service: media_player.volume_set
+      data_template:
+        entity_id: >
+          {{states('sensor.media_player')}}
+        volume_level: >
+          {{  states('input_number.radio_volume')|float }}
+
