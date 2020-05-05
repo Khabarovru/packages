@@ -1,19 +1,7 @@
 homeassistant:
   customize:
-    switch.frontdoor_camera_ir_filter:
-      name: Ночной режим
     input_boolean.notify_camera_alerts:
       name: Уведомления с камеры
-
-group:
-  frontdoor_camera:
-    - camera.frontdoor_camera
-    - switch.frontdoor_camera_ir_filter
-
-camera:
-  - platform: ffmpeg
-    name: Frontdoor Camera
-    input: -rtsp_transport tcp -i rtsp://root:ismart12@192.168.1.30:8554/unicast
 
 telegram_bot:
   - platform: polling
@@ -32,48 +20,9 @@ input_boolean:
       initial: on
       icon: mdi:calendar-check
 
-switch:
-  #ir_cut
-  - platform: mqtt
-    name: "frontdoor_camera_ir_filter"
-    state_topic: "myhome/dafang/ir_cut"
-    command_topic: "myhome/dafang/ir_cut/set"
-    qos: 1
-    payload_on: "ON"
-    payload_off: "OFF"
-    retain: false
-
 automation:
-#Выключение ночного режима когда свет в прихожей включен
-  # - id: camera_night_mode_off
-  #   alias: Cameras Night Mode Off
-  #   initial_state: true
-  #   trigger:
-  #     - platform: state
-  #       entity_id: light.sonoff_1
-  #       to: "on"
-  #   action:
-  #     - service: mqtt.publish
-  #       data:
-  #         topic: "myhome/dafang/ir_cut/set"
-  #         payload: "OFF"
-
-#Включение ночного режима когда свет в прихожей выключен
-  # - id: camera_night_mode_on
-  #   alias: Camera Night Mode On
-  #   initial_state: true
-  #   trigger:
-  #     - platform: state
-  #       entity_id: light.sonoff_1
-  #       to: "off"
-  #   action:
-  #     - service: mqtt.publish
-  #       data:
-  #         topic: "myhome/dafang/ir_cut/set"
-  #         payload: "ON"
-
 #Уведомление в телеграмм о движении если Денис не Дома
-  - alias: Notify Frontdoor Camera Snapshots
+  - alias: Notify Camera Snapshots
     initial_state: true
     trigger:
 ## Открытие входной двери
@@ -95,7 +44,7 @@ automation:
           message: Message
           data: 
             photo:
-              url: 'http://127.0.0.1:8123{{states.camera.frontdoor_camera.attributes.entity_picture}}'
+              url: 'http://127.0.0.1:8123{{states.camera.dafang.attributes.entity_picture}}'
               caption: '{{now().strftime("%d.%m.%Y-%H:%M:%S")}}'
 
 ## Звонок в дверь 
@@ -150,8 +99,6 @@ automation:
       data:
         title: "Обнаружена протечка"
         message: "Кухня раковина {{ states('sensor.time_date') }}"
-    - service: script.turn_on
-      entity_id: script.11_warning
 
 ## Протечка устранена, раковина          
   - alias: 04_kitchen_wleak_washstand_off
@@ -166,5 +113,30 @@ automation:
       data:
         title: "Протечка устранена"
         message: "Кухня раковина {{ states('sensor.time_date') }}"
-    - service: script.turn_on
-      entity_id: script.11_all_ok 
+
+## Дым обнаружен 
+  - alias: 04_kitchen_wleak_washstand_on
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.smoke_sensor_158d00045e9238
+     to: 'on'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Сработал датчик дыма"
+        message: "Кухня {{ states('sensor.time_date') }}"
+
+## Дым устранен         
+  - alias: 04_kitchen_wleak_washstand_off
+    initial_state: true
+    trigger:       
+     platform: state
+     entity_id: binary_sensor.smoke_sensor_158d00045e9238
+     from: 'on'
+     to: 'off'
+    action:
+    - service: notify.telegram
+      data:
+        title: "Датчик дыма отключен"
+        message: "Кухня {{ states('sensor.time_date') }}"

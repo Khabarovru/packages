@@ -1,0 +1,35 @@
+camera:
+  - platform: generic
+    name: dafang
+    username: root
+    password: ismart12
+    authentication: basic
+    still_image_url: https://192.168.1.30/cgi-bin/currentpic.cgi
+    verify_ssl: false
+    scan_interval: 5
+
+rest_command:      
+  dafang_nightvision_enable:
+    url: "https://root:ismart12@192.168.1.30/cgi-bin/action.cgi?cmd=nightvision-enable"
+    verify_ssl: false
+  
+  dafang_nightvision_disable:
+    url: "https://root:ismart12@192.168.1.30/cgi-bin/action.cgi?cmd=nightvision-disable"
+    verify_ssl: false
+
+automation:
+- alias: dafang_nightvision_disable
+  trigger:
+    - platform: state
+      entity_id: switch.plug_158d0003923110
+      to: "on"
+  action:
+  - service: rest_command.dafang_nightvision_disable
+
+- alias: dafang_nightvision_enable
+  trigger:
+    - platform: state
+      entity_id: switch.plug_158d0003923110
+      to: "off"
+  action:
+  - service: rest_command.dafang_nightvision_enable
