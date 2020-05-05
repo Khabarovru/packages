@@ -115,7 +115,7 @@ automation:
         message: "Кухня раковина {{ states('sensor.time_date') }}"
 
 ## Дым обнаружен 
-  - alias: 04_kitchen_wleak_washstand_on
+  - alias: 04_kitchen_smoke_on
     initial_state: true
     trigger:       
      platform: state
@@ -128,7 +128,7 @@ automation:
         message: "Кухня {{ states('sensor.time_date') }}"
 
 ## Дым устранен         
-  - alias: 04_kitchen_wleak_washstand_off
+  - alias: 04_kitchen_smoke_off
     initial_state: true
     trigger:       
      platform: state
