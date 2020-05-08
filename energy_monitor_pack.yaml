@@ -38,7 +38,7 @@ sensor:
       money_month_powerstrip:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_powerstrip.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_powerstrip.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -46,7 +46,7 @@ sensor:
       money_lastmonth_powerstrip:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_powerstrip.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_powerstrip.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
 ####AC#####
   - platform: template
@@ -82,7 +82,7 @@ sensor:
       money_month_pow1:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_pow1.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_pow1.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -90,7 +90,7 @@ sensor:
       money_lastmonth_pow1:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow1.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow1.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
 
 ####сервер#####
@@ -128,7 +128,7 @@ sensor:
       money_month_pow3:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_pow3.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_pow3.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -136,7 +136,7 @@ sensor:
       money_lastmonth_pow3:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow3.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow3.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
 ####холодильник#####
   - platform: template
@@ -173,7 +173,7 @@ sensor:
       money_month_pow2:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_pow2.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_pow2.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -181,7 +181,7 @@ sensor:
       money_lastmonth_pow2:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow2.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_pow2.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
 ####plug_1#####
   - platform: template
@@ -217,7 +217,7 @@ sensor:
       money_month_plug_1:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_plug_1.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_1.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -225,7 +225,7 @@ sensor:
       money_lastmonth_plug_1:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_1.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_1.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash
 ####plug_2#####
   - platform: template
@@ -261,7 +261,7 @@ sensor:
       money_month_plug_2:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_plug_2.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_2.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -269,7 +269,7 @@ sensor:
       money_lastmonth_plug_2:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_2.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_2.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash
 ####plug_3#####
   - platform: template
@@ -305,7 +305,7 @@ sensor:
       money_month_plug_3:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_plug_3.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_3.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -313,7 +313,7 @@ sensor:
       money_lastmonth_plug_3:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_3.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_3.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash
 ####plug_4#####
   - platform: template
@@ -349,7 +349,7 @@ sensor:
       money_month_plug_4:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_plug_4.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_4.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -357,7 +357,7 @@ sensor:
       money_lastmonth_plug_4:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_4.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_4.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash
 ####plug_5#####
   - platform: template
@@ -393,7 +393,7 @@ sensor:
       money_month_plug_5:
         friendly_name: "Стоимость за текущий месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_month_plug_5.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_month_plug_5.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
     
   - platform: template
@@ -401,7 +401,7 @@ sensor:
       money_lastmonth_plug_5:
         friendly_name: "Стоимость за прошлый месяц"
         unit_of_measurement: 'р'
-        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_5.state | float * 4.69)|round(2) }}"
+        value_template: "{{ (states.sensor.mqtt_power_lastmonth_plug_5.state | float * 4.81)|round(2) }}"
         icon_template: mdi:square-inc-cash 
 
 automation:

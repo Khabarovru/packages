@@ -1,15 +1,8 @@
-yeelight:
-  devices:
-       192.168.1.99:
-        name: yeelight
-        transition: 1000
-        model: strip1
-
 group:
   all_light:
     name: Весь свет
     entities:
-      - light.sonoff_1
+      - switch.plug_158d0003923110
       - light.sonoff_3
       - light.sonoff_4
       - light.sonoff_6
@@ -100,16 +93,16 @@ script:
   01_enter_on:
     alias: Включение лампочки в прихожей
     sequence:
-      - service: light.turn_on
+      - service: switch.turn_on
         entity_id:
-          -  light.sonoff_1
+          -  switch.plug_158d0003923110
           
   01_enter_off:
     alias: Выключение лампочки в прихожей
     sequence:
-      - service: light.turn_off
+      - service: switch.turn_off
         entity_id:
-          -  light.sonoff_1
+          -  switch.plug_158d0003923110
 
   home_mode_away:
     sequence:
@@ -154,7 +147,7 @@ automation:
     - service: script.turn_on
       data_template:
        entity_id: >-
-          {%- if states.light.sonoff_1.state  == 'off' and (as_timestamp (now()) -as_timestamp(states.light.sonoff_1.last_changed) > 120) -%}
+          {%- if states.switch.plug_158d0003923110.state  == 'off' and (as_timestamp (now()) -as_timestamp(states.switch.plug_158d0003923110.last_changed) > 120) -%}
           script.01_enter_on
           {%- else -%}
           script.stub
@@ -166,7 +159,7 @@ automation:
   trigger:
 ## Лампочка включается
   - platform: state
-    entity_id: light.sonoff_1
+    entity_id: switch.plug_158d0003923110
     to: 'on'
   action:
   - service: timer.cancel
@@ -182,7 +175,7 @@ automation:
   trigger:
 ## Лампочка включается
   - platform: state
-    entity_id: light.sonoff_1
+    entity_id: switch.plug_158d0003923110
     to: 'off'
   action:
   - service: timer.cancel
@@ -199,12 +192,12 @@ automation:
        entity_id: timer.entrance
   condition:
     - condition: state
-      entity_id: light.sonoff_1
+      entity_id: switch.plug_158d0003923110
       state: 'on'
   action:
-    - service: light.turn_off
+    - service: switch.turn_off
       entity_id:
-        - light.sonoff_1
+        - switch.plug_158d0003923110
 
 - alias: 02_toilet_light
   initial_state: true

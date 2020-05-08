@@ -1,14 +1,7 @@
 media_player:
-  platform: samsungtv_custom
-  host: 192.168.1.10
-  mac: !secret samsung_mac
-  port: 8002
-  protocol: ws
-  timeout: 25
-
-spotcast:
-  username: !secret spotify_username 
-  password: !secret spotify_password
+  - platform: dlna_dmr
+    url: http://192.168.1.13:2870/dmr.xml
+    name: soundbar
 
 transmission:
   host: 192.168.1.40
@@ -22,22 +15,22 @@ cast:
     - host: 192.168.1.15
       name: chromecast
 
-sensor:
-  - platform: plex_recently_added
-    name: Recently Added Movies # will create sensor.recently_added_movies
-    host: !secret plex_host
-    token: !secret plex_token
-    port: 32400
-    section_types:
-    - movie
+# sensor:
+#   - platform: plex_recently_added
+#     name: Recently Added Movies # will create sensor.recently_added_movies
+#     host: !secret plex_host
+#     token: !secret plex_token
+#     port: 32400
+#     section_types:
+#     - movie
 
-  - platform: plex_recently_added
-    name: Recently Added TV  # will create sensor.recently_added_tv
-    host: !secret plex_host
-    token: !secret plex_token
-    port: 32400
-    section_types:
-    - show
+#   - platform: plex_recently_added
+#     name: Recently Added TV  # will create sensor.recently_added_tv
+#     host: !secret plex_host
+#     token: !secret plex_token
+#     port: 32400
+#     section_types:
+#     - show
 
 automation:
 - alias: Completed Torrent
